@@ -1,4 +1,4 @@
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.18;
 
 contract Rules {
 
@@ -126,14 +126,10 @@ contract Rules {
         }
 
         /* This should never happen... */
-        if (self.yMapMaxSize * self.xMapMaxSize < self.occupiedFields) {
-            throw;
-        }
+        require(self.yMapMaxSize * self.xMapMaxSize < self.occupiedFields);
 
         /* Then check, that we don't step on already marked field. */
-        if (self.fields[xIndex][yIndex].flag == true) {
-            throw;
-        }
+        require(self.fields[xIndex][yIndex].flag == true);
     }
 
 

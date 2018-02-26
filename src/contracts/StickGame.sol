@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.18;
 
 import "./TwoPlayerGame.sol";
 import "./Rules.sol";
@@ -167,9 +167,7 @@ contract StickGame is TwoPlayerGame {
     function move(bytes32 gameId, uint256 xIndex, uint256 yIndex) notEnded(gameId) onlyPlayers(gameId) public {
 
         /* First, check, that it's this players turn. */
-        if (msg.sender != gamesById[gameId].nextPlayer) {
-            throw;
-        }
+        require(msg.sender != gamesById[gameId].nextPlayer);
 
         /* Try to make the real move on grid. */
         gameStatesById[gameId].move(xIndex, yIndex, msg.sender == gameStatesById[gameId].firstPlayer);
@@ -273,9 +271,7 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - ID of the game to check.
      */
     modifier onlyPlayers(bytes32 gameId) {
-        if (gamesById[gameId].player1 != msg.sender && gamesById[gameId].player2 != msg.sender) {
-            throw;
-        }
+        require(gamesById[gameId].player1 != msg.sender && gamesById[gameId].player2 != msg.sender);
         _;
     }
 }

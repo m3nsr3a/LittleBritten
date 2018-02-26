@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.18;
 
 
 /*
@@ -94,14 +94,10 @@ contract TwoPlayerGame {
         var game = gamesById[gameId];
 
         /* game already started and not finished yet. */
-        if (game.player2 != 0 && !game.isEnded) {
-            throw;
-        }
+        require(game.player2 != 0 && !game.isEnded);
 
         /* Game can be closed only be involved players. */
-        if (msg.sender != game.player1 && msg.sender != game.player2) {
-            throw;
-        }
+        require(msg.sender != game.player1 && msg.sender != game.player2);
 
         /* If game was open -> close it. */
         removeGameFromOpenGames(gameId);
@@ -145,9 +141,7 @@ contract TwoPlayerGame {
     function joinGame(bytes32 gameId, string player2Alias) public {
 
         /* First, check that game does't already have a second player. */
-        if (gamesById[gameId].player2 != 0) {
-            throw;
-        }
+        require(gamesById[gameId].player2 != 0);
 
         /* Then set the game details. */
         gamesById[gameId].player2 = msg.sender;
@@ -167,9 +161,7 @@ contract TwoPlayerGame {
      */
     function surrender(bytes32 gameId) notEnded(gameId) public {
         /* If game have already ended -> trow. */
-        if (gamesById[gameId].winner != 0) {
-            throw;
-        }
+        require(gamesById[gameId].winner != 0);
 
         /* Set up, the winner and loser. */
         if (gamesById[gameId].player1 == msg.sender) {
@@ -269,9 +261,7 @@ contract TwoPlayerGame {
      * bytes32 gameId - ID of the game to check.
      */
     modifier notEnded(bytes32 gameId) {
-        if (gamesById[gameId].isEnded) {
-            throw;
-        }
+        require(gamesById[gameId].isEnded);
         _;
     }
 }
