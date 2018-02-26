@@ -103,6 +103,14 @@ App = {
 
 };
 
+
+<!--Chess.joinGame($scope.gameId, $scope.username,-->
+<!--{-->
+<!--from: accounts.selectedAccount,-->
+<!--value: web3.toWei($scope.etherbet.replace(',', '.'), 'ether')-->
+<!--});-->
+
+
 $(function () {
     $(window).load(function () {
         App.init();

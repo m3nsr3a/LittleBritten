@@ -1,7 +1,12 @@
 /* Simple reset */
 body {
-	margin: 0px;
-	padding: 0px;
+    margin: 0 auto;
+    padding: 1em;
+    background: #2B3134;
+    color: #777;
+    text-align: center;
+    font-family: "Gill sans", sans-serif;
+    width: 80%;
 }
 
 #container {
@@ -23,3 +28,18 @@ body {
 	stroke: #ff9999;
 }
 
+.loader {
+    height: 100px;
+    width: 20%;
+    text-align: center;
+    padding: 1em;
+    margin: 0 auto 1em;
+    display: inline-block;
+    vertical-align: top;
+}
+.h1{
+    margin: 1em 0;
+    border-bottom: 1px dashed;
+    padding-bottom: 1em;
+    font-weight: lighter;
+}

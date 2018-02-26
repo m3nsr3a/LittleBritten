@@ -5,43 +5,107 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
         <title>Little Britten</title>
 
         <!-- Bootstrap -->
         <link href="../../vendor/css/bootstrap.min.css" rel="stylesheet">
-
-        <link href="../css/style.css" rel="stylesheet">
-
-    </head>
-
-    <body>
-
-        <h1>Hello, world!</h1>
-
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
         <script src="../../vendor/js/jquery_1.12.4.js"></script>
         <!-- Include all compiled plugins (below), or include individual files as needed -->
         <script src="../../vendor/js/bootstrap.min.js"></script>
-        <!-- Include the -->
+        <!-- Works with Ethereum test-net. -->
         <script src="../../vendor/js/web3.min.js"></script>
-        <!-- Special plugin for -->
+        <!-- Special plugin for contract managing. -->
         <script src="../../vendor/js/truffle-contract.js"></script>
-        <!-- Our code itself. -->
-        <script src="../js/app.js"></script>
+        <!-- Used to create nice header. -->
+        <script src="../../vendor/js/glitch.js"></script>
+        <link href="../../vendor/css/glitch.css" rel="stylesheet">
+
 
         <!-- Our code itself. -->
-        <script src="../js/primitives/base.js"></script>
-        <script src="../js/primitives/line.js"></script>
-        <script src="../js/primitives/square.js"></script>
-        <script src="../js/primitives/vertex.js"></script>
+        <script src="../../static/js/primitives/base.js"></script>
+        <script src="../../static/js/primitives/line.js"></script>
+        <script src="../../static/js/primitives/square.js"></script>
+        <script src="../../static/js/primitives/vertex.js"></script>
 
-        <script src="../js/renderer.js"></script>
-        <script src="../js/logic.js"></script>
+        <script src="../../static/js/app.js"></script>
+        <script src="../../static/js/renderer.js"></script>
+        <script src="../../static/js/logic.js"></script>
+
+        <link href="../../static/css/style.css" rel="stylesheet">
+    </head>
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50%" height="50%" class="filterwrapper">
+        <defs>
+            <svg id="glitchmask-r" width="100%" height="100%" viewbox="0 0 100 100" preserveAspectRatio="none">
+                <line class="top-r" x1="0" y1="0" x2="100%" y2="0"> </line>
+                <line class="bot-r" x1="0" y1="100%" x2="100%" y2="100%"></line>
+            </svg>
+            <svg id="glitchmask-g" width="100%" height="100%" viewbox="0 0 100 100" preserveAspectRatio="none">
+                <line class="top-g" x1="0" y1="0" x2="100%" y2="0"></line>
+                <line class="bot-g" x1="0" y1="100%" x2="100%" y2="100%"></line>
+            </svg>
+
+            <filter color-interpolation-filters="sRGB" id="filter" width="100%" heigth="100%" x="0" y="0">
+                <feFlood flood-color="black" result="black" />
+
+                <!-- red text start -->
+                <feFlood flood-color="red" result="REDTXT_FLOOD_10" />
+                <feComposite operator="in" in="REDTXT_FLOOD_10" in2="SourceAlpha" result="REDTXT_COMP_20" />
+                <feOffset in="SourceGraphic" dx="-2" dy="0" result="REDTXT_OFFSET_30" />
+                <feMerge result="REDTXT_MERGE_40">
+                    <feMergeNode in="black" />
+                    <feMergeNode in="REDTXT_COMP_20" />
+                    <feMergeNode in="REDTXT_OFFSET_30" />
+                </feMerge>
+                <feImage preserveAspectRatio="none" id="mask-r" result="REDTXT_IMG_50" xlink:href="#glitchmask-r" />
+                <feComposite in2="REDTXT_IMG_50" in="REDTXT_MERGE_40" operator="out" result="REDTXT_COMP_60" />
+                <!-- red text end -->
+
+                <!-- green text start -->
+                <feFlood flood-color="limegreen" result="GREENTXT_FLOOD_10" />
+                <feComposite operator="in" in="GREENTXT_FLOOD_10" in2="SourceAlpha" result="GREENTXT_COMP_20" />
+                <feOffset in="SourceGraphic" dx="2" dy="0" result="GREENTXT_OFFSET_30" />
+                <feMerge result="GREENTXT_MERGE_40">
+                    <feMergeNode in="black" />
+                    <feMergeNode in="GREENTXT_COMP_20" />
+                    <feMergeNode in="GREENTXT_OFFSET_30" />
+                </feMerge>
+                <feImage preserveAspectRatio="none" id="mask-g" result="GREENTXT_IMG_50" xlink:href="#glitchmask-g" />
+                <feComposite in2="GREENTXT_IMG_50" in="GREENTXT_MERGE_40" operator="out" result="GREENTXT_COMP_60" />
+                <!-- green text end -->
+
+                <feMerge result="MERGE_10">
+                    <feMergeNode in="SourceGraphic" />
+                    <feMergeNode in="REDTXT_COMP_60" />
+                    <feMergeNode in="GREENTXT_COMP_60" />
+                </feMerge>
+            </filter>
+        </defs>
+    </svg>
+    <body>
 
         <div id="container">
 
-            <h2>My awesome game</h2>
+            <figure class="glitch-filter-example">
+                <svg
+                        class="glitch-filter-example__demo"
+                        version="1.1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        width="100%"
+                        height="100%">
+                    <text
+                            class="glitch-filter-example__filtered-text"
+                            y="50%"
+                            text-anchor="middle"
+                            x="50%"
+                            transform="translate(0 34)">
+                        Little Britten
+                    </text>
+                </svg>
+            </figure>
+
             <h4 id="current-player-display" style="display: none;">
                 Current player:
                 <span id="player-name"></span>
@@ -50,6 +114,8 @@
             <h4 id="winner-display" style="display: none;">
                 <span id="winner-name"></span> wins!
             </h4>
+
+            <div class="loader loader--style1" title="0"> </div>
 
             <svg id="gameboard" height="600" width="600"></svg>
 
@@ -131,12 +197,6 @@
             game.start();
 
         </script>
-
-        Chess.joinGame($scope.gameId, $scope.username,
-        {
-        from: accounts.selectedAccount,
-        value: web3.toWei($scope.etherbet.replace(',', '.'), 'ether')
-        });
 
     </body>
 
