@@ -11,7 +11,7 @@
 
 ## [TL;DR](#table-of-contents)
 
-* Popular pencil game from good oll' times -- `Sticks & Squares`.
+* Popular pencil game from good oll' times - `Sticks & Squares`.
 * All logic is held by smart contracts, frontend only handles the drawing part.
 * MetaMask for user-friendliness is integrated.
 
@@ -33,7 +33,7 @@ Lets look at the _source code structure_ under `src` folder:
 * __truffle.js__ - Configuration file, for deploying using _truffle_ framework.
 * __conf.py__ - Configuration file for _Gunicorn_. 
 * __requirements.txt__ - Dependencies, for launching our _python_ code. 
-* __vendor__ --- under this folder, the external libraries and files lie. I use:
+* __vendor__ - under this folder, the external libraries and files lie. I use:
     * I use `bootstrap` package for some styles and minor view modifications.
     * `jquery_1.12.4.js`, the standard lib for working with DOM elements. 
     * `web3.js` for connection to Ethereum network.
@@ -54,7 +54,7 @@ Lastly, let's add a little bit, on how it works:
     * _Migrations_ contract is needed to correctly deploy code -> nothing interesting here.
     * _Math_ - Small math library that I'm using.
     * _Rules_ - The logic of the game.
-    * _TwoPlayerGame_ - 
+    * _TwoPlayerGame_ - Core logic for game. Manipulates low-level game functions.
     * The _StickGame_ contract represents the game itself. It extend the _TwoPlayerGame_ contract, and provides 
         higher level function for game handling.
 2. 
@@ -78,26 +78,29 @@ In order to start everything, a little bit of preparations are required:
 2. Install the `docker` thing.
     * Do `curl https://get.docker.com/ | sh` in the terminal, 
         if you are under some Linux distro.(In other case, look [here](https://docs.docker.com/install/))
-    * Install [pip3]() for __python3__ and run `sudo pip3 install docker-compose`.
+    * Install [pip3](https://stackoverflow.com/questions/6587507/how-to-install-pip-with-python-3) 
+        for __python3__ and run `sudo pip3 install docker-compose`.
 3. Then, at long last, let's run _dis_ game.
     * Assuming you have __git__ run in terminal `git clone https://github.com/NumenZ/LittleBritten`,
         or, well, just somehow get the code part of current project.
-    * Now, we need to get a small information from our meta-mask account, in order for us, to launch test-net correctly:
-        * Press on ellipsis(_3 dots_), under the
-        literally -- `TAG="info_from_your_buffer"`.
-        * Do, the same, but now for '' parameter. However here, not forget to attach `0x` 
-            to the beginning of your input(literally -- `TAG="0xINFO_FROM_YOUR_BUFFER"`.).  
+    * Now, we need to get a small information from our __MetaMask__ account, 
+        in order for us, to launch test-net correctly:
+        * Press on ellipsis(_3 dots_), under the foxes head. ![Menu1](/doc/meta-mask-1.png)
+        * Find the export Address and Private key to some file.![Menu2](/doc/meta-mask-2.png)
+        * Save this parameters as environmental variables -> in your terminal(replace caps):
+            * `export TEST_ADDRESS="ADDRESS"`.
+            * `export TEST_PRIVATE_KEY="0xPRIVATE_KEY"`.
     * Finally, run `docker-compose up --build`.
-4. As a last step, open your __Google Chrome__ browser at 'http://localhost:8545', and _enjoy the game_. 
+4. As a last step, open your __Google Chrome__ browser at 'http://127.0.0.1:8080', and _enjoy the game_.
 
 ## [ToDo Log](#table-of-contents)
 
-- [x] __0.2 points__ - Write simple working example, with simple _web-server_ and _fronted_.
+- [x] __2 points__ - Write simple working example, with simple _web-server_ and _fronted_.
 
-- [x] __0.4 points__  - Implement the game, with nice GUIs and _Smart-Contracts_ backing up the logic.
+- [x] __2 points__  - Implement the game, with nice GUIs and _Smart-Contracts_ backing up the logic.
 
-- [ ] __0.6 points__  - Connect _front-end_ with the _back-end_ logic.
+- [ ] __3 points__  - Connect _front-end_ with the _back-end_ logic.
 
-- [x] __0.8 points__  - Make all configuration as simple as possible, using `Docker`, `MetaMask`, _file-serving_, etc.
+- [x] __2 points__  - Make all configuration as simple as possible, using `Docker`, `MetaMask`, _file-serving_, etc.
 
-- [x] __1.0 point__ - Write this `ReadMe.md` with all explanations.
+- [x] __1 point__ - Write this `ReadMe.md` with all explanations.
