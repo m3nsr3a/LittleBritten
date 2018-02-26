@@ -5,38 +5,59 @@
 ## Table Of Contents
 1. [TL;DR](#tldr)
 2. [Deadlines](#deadlines)
-5. [Implementation Details](#implementation-details)
-6. [How-to Use](#how-to-use)
-7. [ToDo Log](#todo-log)
+3. [Implementation Details](#implementation-details)
+4. [How-to Use](#how-to-use)
+5. [ToDo Log](#todo-log)
 
 ## [TL;DR](#table-of-contents)
 
-* one
-* Two
+* Popular pencil game from good oll' times -- `Sticks & Squares`.
+* All logic is held by smart contracts, frontend only handles the drawing part.
+* MetaMask for user-friendliness is integrated.
 
 ## [Deadlines](#table-of-contents)
 
 |       Date      | Maximum possible mark |
 | :-------------: | :-------------------: |
 | 2359 5-th March |         10.0          |
-| 0000 6-th March |         0.0           |
-
 
 ## [Implementation Details](#table-of-contents)
 
-## Installing the application to an Ethereum network
-Truffle commands helps you to install the contracts to a network. In this project it's slightly different but more useful. You can either use `npm run migrate` or alternatively if truffle is installed globally you can `truffle migrate` directly with the following arguments. These configurations can be updated by modifying the `./truffle-config.js`
+Lets look at the _source code structure_ under `src` folder:
+* __contracts__ - Solidity code.
+* __static__ - Frontend code and resources lie here.
+* __migrations__ - Contract deployment code.
+* __SubDockerfile__ - Launches the _cite_ __docker-machine__. 
+* __run.sh__ - Script that launches the server.
+* __static_server.py__ - Simple server, that serves static.
+* __truffle.js__ - Configuration file, for deploying using _truffle_ framework.
+* __conf.py__ - Configuration file for _Gunicorn_. 
+* __requirements.txt__ - Dependencies, for launching our _python_ code. 
+* __vendor__ --- under this folder, the external libraries and files lie. I use:
+    * I use `bootstrap` package for some styles and minor view modifications.
+    * `jquery_1.12.4.js`, the standard lib for working with DOM elements. 
+    * `web3.js` for connection to Ethereum network.
+    * And finally, `truffle-contract.js` custom library from truffle to _wrap_ __Solidity__ contracts in __JS__.
+    
+The system works as follows:
+* Running `docker-compose` command will launch two _docker-environments_:
+    * __ledger__ - Here the `ganache` Ethereum test-net will be launched. 
+    * __cite__ - The simple Flask server will launch, serving our web-game.
+* When the __cite__ image, will be build, it will:
+    * Pull some dependencies.
+    * Compile contracts.
+    * Deploy contracts to test-net, that is in separate container.
+    * Launch python server on _Flask_, that will serve our frontend logic.
 
-`--network`: name of the network you want to deploy to. You can use `rinkeby` or `mainnet` depends on which one you would like to deploy the contract.
-
-`--accessToken`: Deployment is using [infura](https://infura.io/) to deploy the contract. In order to deploy the contract you need to create an account, obtain the access token, and pass as an argument.
-
-`--mnemonic`: 12 word mnemonic for the deployment account. Your account must have enough ether to cover the gas cost.
-
-```
-npm run migrate -- --network <<network>> --accessToken <<token>> --mnemonic <<12 word mnemonic>>
-```
-
+Lastly, let's add a little bit, on how it works:
+1. Contracts hold the logic.
+    * _Migrations_ contract is needed to correctly deploy code -> nothing interesting here.
+    * _Math_ - Small math library that I'm using.
+    * _Rules_ - The logic of the game.
+    * _TwoPlayerGame_ - 
+    * The _StickGame_ contract represents the game itself. It extend the _TwoPlayerGame_ contract, and provides 
+        higher level function for game handling.
+2. 
 
 ## [How-to Use](#table-of-contents)
 
@@ -73,9 +94,9 @@ In order to start everything, a little bit of preparations are required:
 
 - [x] __0.2 points__ - Write simple working example, with simple _web-server_ and _fronted_.
 
-- [ ] __0.4 points__  - Implement the game, with nice GUIs and _Smart-Contracts_ backing up the logic.
+- [x] __0.4 points__  - Implement the game, with nice GUIs and _Smart-Contracts_ backing up the logic.
 
-- [ ] __0.6 points__  - Write _tests_ for the _Smart-Contracts_ code.
+- [ ] __0.6 points__  - Connect _front-end_ with the _back-end_ logic.
 
 - [x] __0.8 points__  - Make all configuration as simple as possible, using `Docker`, `MetaMask`, _file-serving_, etc.
 
