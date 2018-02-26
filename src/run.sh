@@ -4,7 +4,7 @@
 check_truffle_version() {
     result=$(trfuffle verion)
     truffle compile
-    truffle mi
+    truffle migrate --network development --reset
 
     return 1
 }
@@ -21,7 +21,7 @@ die() {
 main() {
 #    if [check_truffle_version] then else die "Kaboom";
     pip3 install -r requirements.txt
-    gunicorn -c static_server.py static_server:app
+    gunicorn -c conf.py static_server:app
 }
 
 main
