@@ -1,12 +1,42 @@
 #!/usr/bin/env bash
 
-# Tell a joke
+# Truffle version is really important.
 check_truffle_version() {
-    result=$(trfuffle verion)
+
+    if type -p truffle; then
+        echo "Found truffle executable in PATH, yay!"
+        _truffle=truffle
+    else
+        die "There is no truffle deployment system found."
+
+    fi
+
+    if [[ "$_truffle" ]]; then
+        version=$("$_truffle" version 2>&1 | awk -F ' ' '/v/ {print $2}')
+        echo version "$version"
+        if [[ "$version" > "4.0.5" ]]; then
+            echo "Truffle version good."
+        else
+            die "Truffle version is not enough."
+        fi
+    fi
+}
+
+# Compile and deploy contracts.
+compile_contracts_and_deploy() {
     truffle compile
     truffle migrate --network development --reset
+}
 
-    return 1
+# Get everything needed to launch static server.
+resolve_python_dependencies() {
+    if command -v python3 &>/dev/null; then
+        echo "There is Python3 on this machine."
+    else
+        die "No Python3 found."
+    fi
+
+    pip3 install -r requirements.txt
 }
 
 # Write message and exit with error.
@@ -17,13 +47,14 @@ die() {
     exit 1
 }
 
-# Establish run order
+# Establish launching pipeline.
 main() {
-#    if [check_truffle_version] then else die "Kaboom";
-    pip3 install -r requirements.txt
+    check_truffle_version;
+    compile_contracts_and_deploy;
+    resolve_python_dependencies;
+
     gunicorn -c conf.py static_server:app
+    exit 0
 }
 
 main
-
-exit 0

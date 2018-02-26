@@ -57,7 +57,13 @@ Lastly, let's add a little bit, on how it works:
     * _TwoPlayerGame_ - Core logic for game. Manipulates low-level game functions.
     * The _StickGame_ contract represents the game itself. It extend the _TwoPlayerGame_ contract, and provides 
         higher level function for game handling.
-2. 
+2. Fronted is primitive.
+    * No logic, just updates the screen.  
+    * Based on callbacks(solidity events), that receives from the _ledger_.
+3. Everything is served under Docker. 
+    * One image, creates the ledger using `ganache-cli`.
+    * Other one, which is based on the first image, serves the web-page(__No__ logic there, just for convenience).
+    * Also it's duty to compile, and upload _Smart-contracts_. 
 
 ## [How-to Use](#table-of-contents)
 
