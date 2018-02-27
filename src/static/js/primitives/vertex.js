@@ -12,6 +12,7 @@ class Vertex extends DrawPrimitive {
      */
     constructor(board, x, y) {
         super();
+
         this._board = board;
         this._y = y;
         this._x = x;

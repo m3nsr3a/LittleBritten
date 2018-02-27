@@ -1,6 +1,9 @@
 /**
- * This class represents a primitive, that shows, which
+ * This class represents a drawing primitive, which can be:
+ *  - Drawn on the screen.
+ *  - And claimed.
  *
+ *  In `normal`, programming languages, this would have been abstract class.
  */
 class DrawPrimitive {
 

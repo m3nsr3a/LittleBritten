@@ -15,7 +15,7 @@ class Line extends DrawPrimitive {
      */
     constructor(board, type, index, vertex1, vertex2) {
         super();
-        console.log(board);
+
         this._board = board;
         this._type = type;
         this._index = index;
@@ -55,7 +55,6 @@ class Line extends DrawPrimitive {
 
             // make sure the segment hasn't already been taken before completing the turn
             if (!that.owner) {
-                console.log(that.board);
                 that.board.game.completeTurn(that);
             }
         });

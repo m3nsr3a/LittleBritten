@@ -1,4 +1,6 @@
 /**
+ *
+ *
  * Object is used ONLY for filling in a player's colors when a square is claimed.
  * The actual detection of completed squares is done in Board using Line objects.
  */
@@ -15,6 +17,7 @@ class Square extends DrawPrimitive {
      */
     constructor(board, x, y, offset) {
         super();
+
         this._board = board;
         this._y = y;
         this._x = x;
@@ -105,5 +108,3 @@ class Square extends DrawPrimitive {
         return this._opacity;
     }
 }
-
-
