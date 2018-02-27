@@ -15,7 +15,7 @@ contract TwoPlayerGame {
     /*
      * Initialise this entity.
      */
-    function TwoPlayerGame() {
+    function TwoPlayerGame() public {
         openGamesByIdHead = 'end';
     }
 
@@ -169,10 +169,10 @@ contract TwoPlayerGame {
             gamesById[gameId].winner = gamesById[gameId].player2;
         } else if(gamesById[gameId].player2 == msg.sender) {
             /* player2 surrendered -> player1 won. */
-            games[gameId].winner = gamesById[gameId].player1;
+            gamesById[gameId].winner = gamesById[gameId].player1;
         } else {
             /* Sender is'n related to this game. */
-            throw;
+            revert();
         }
 
         /* Mark, that the game had ended. */
@@ -192,7 +192,7 @@ contract TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game to remove from LL.
      */
-    function removeGameFromOpenGames(byte32 gameId) internal {
+    function removeGameFromOpenGames(bytes32 gameId) internal {
         if (openGamesByIdHead == gameId) {
             /* If is head -> detach it, and zero-out. */
             openGamesByIdHead = openGamesById[openGamesByIdHead];
@@ -218,7 +218,7 @@ contract TwoPlayerGame {
     /*
      * Using small hack, return list of all currently open games.
      */
-    function getOpenGameIds() constant returns (bytes32[]) {
+    function getOpenGameIds() public constant returns (bytes32[]) {
 
         /* Count total number of different open games. */
         var counter = 0;

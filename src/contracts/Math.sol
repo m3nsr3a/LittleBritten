@@ -83,10 +83,10 @@ library Math {
      * int256 a - Some number.
      */
     function abs(int256 a) internal pure returns (uint256) {
-        if (value >= 0) {
-             return uint256(value);
+        if (a >= 0) {
+             return uint256(a);
         } else {
-            return uint256(-1 * value);
+            return uint256(-1 * a);
         }
     }
 

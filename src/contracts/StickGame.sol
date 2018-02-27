@@ -21,7 +21,7 @@ contract StickGame is TwoPlayerGame {
      * Initialise this entity.
      * Just empty constructor.
      */
-    function StickGame() TurnBasedGame() {}
+    function StickGame() TwoPlayerGame() public {}
 
 
     /*
@@ -203,7 +203,7 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game, .
      */
-    function getCurrentGameState(bytes32 gameId) constant returns (int8[128]) {
+    function getCurrentGameState(bytes32 gameId) public constant returns (int8[128]) {
         return gameStates[gameId].fields;
     }
 
@@ -212,7 +212,7 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game, .
      */
-    function getWhitePlayer(bytes32 gameId) constant returns (address) {
+    function getWhitePlayer(bytes32 gameId) public constant returns (address) {
         return gameStates[gameId].playerWhite;
     }
 
@@ -224,7 +224,7 @@ contract StickGame is TwoPlayerGame {
      * uint256 xIndex - the x position on the grid.
      * uint256 yIndex - the y position on the grid.
      */
-    function getFlag(bytes32 gameId, uint256 xIndex, uint256 yIndex) constant returns(bool flag) {
+    function getFlag(bytes32 gameId, uint256 xIndex, uint256 yIndex) public constant returns(bool flag) {
         return flags[dynamicIndex][lengthTwoIndex];
     }
 
@@ -233,7 +233,7 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game, .
      */
-    function getNumberOfLeftMoves(bytes32 gameId) constant returns(uint count) {
+    function getNumberOfLeftMoves(bytes32 gameId) public constant returns(uint count) {
         return flags.length;
     }
 
@@ -242,7 +242,7 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game, .
      */
-    function getLeftMoves(bytes32 gameId) constant returns(uint count) {
+    function getLeftMoves(bytes32 gameId) public constant returns(uint count) {
         return flags.length;
     }
 

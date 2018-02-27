@@ -11,18 +11,16 @@ contract Rules {
     /*
      * Initialise this entity.
      */
-    function Rules() {
-        setDirections(Directions.UP, 0, 1);
-        setDirections(Directions.UP_RIGHT, 1, 1);
-        setDirections(Directions.RIGHT, 1, 0);
-        setDirections(Directions.DOWN_RIGHT, 1, -1);
-        setDirections(Directions.DOWN, 0, -1);
-        setDirections(Directions.DOWN_LEFT, -1, -1);
-        setDirections(Directions.LEFT, -1, 0);
-        setDirections(Directions.UP_LEFT, -1, 1);
+    function Rules() public {
+        setDirection(Direction.UP, 0, 1);
+        setDirection(Direction.UP_RIGHT, 1, 1);
+        setDirection(Direction.RIGHT, 1, 0);
+        setDirection(Direction.DOWN_RIGHT, 1, -1);
+        setDirection(Direction.DOWN, 0, -1);
+        setDirection(Direction.DOWN_LEFT, -1, -1);
+        setDirection(Direction.LEFT, -1, 0);
+        setDirection(Direction.UP_LEFT, -1, 1);
 
-        xMapMaxSize = 8;
-        yMapMaxSize = 8;
     }
 
 
@@ -87,7 +85,7 @@ contract Rules {
     }
 
     /* validates a move and executes it */
-    function move(State storage self, uint256 xIndex, uint256 yIndex, bool isFirstPlayer) public {
+    function move(State storage self, uint256 xIndex, uint256 yIndex, bool isFirstPlayer) internal {
 
         bool currentPlayerColor;
         if (isFirstPlayer) {
@@ -105,7 +103,7 @@ contract Rules {
         makeMove(self, xIndex, yIndex, currentPlayerColor);
 
         /* Check, that the game is not over yet. */
-        checkLegality(self, fromIndex, toIndex, fromFigure, toFigure, currentPlayerColor);
+        checkLegality(self, xIndex, yIndex, currentPlayerColor);
 
     }
 
@@ -116,14 +114,12 @@ contract Rules {
     function checkMove(State storage self, uint256 xIndex, uint256 yIndex) internal {
 
         /* First, check that move is within the field. */
-        if (
+        require(
             xIndex > self.xMapMaxSize ||
             xIndex < 0                ||
             yIndex > self.yMapMaxSize ||
             yIndex < 0
-        ) {
-            throw;
-        }
+        );
 
         /* This should never happen... */
         require(self.yMapMaxSize * self.xMapMaxSize < self.occupiedFields);
@@ -133,13 +129,16 @@ contract Rules {
     }
 
 
-    function checkMove(State storage self, uint256 xIndex, uint256 yIndex, bool currentPlayerColor) internal {
-
+    function makeMove(State storage self, uint256 xIndex, uint256 yIndex, bool currentPlayerColor) internal {
 
         self.fields[xIndex][yIndex].flag = true;
         self.fields[xIndex][yIndex].isRed = currentPlayerColor;
 
 //        Check if we have nothing left to move.
+
+    }
+
+    function checkLegality(State storage self, uint256 xIndex, uint256 yIndex, bool currentPlayerColor) internal {
 
     }
 }
