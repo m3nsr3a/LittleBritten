@@ -1,5 +1,7 @@
-var Adoption = artifacts.require("./Rules.sol");
+let TwoPlayerGame = artifacts.require("./TwoPlayerGame.sol");
+let StickGame = artifacts.require("./StickGame.sol");
 
 module.exports = function(deployer) {
-    deployer.deploy(Adoption);
+    deployer.deploy(TwoPlayerGame);
+    deployer.deploy(StickGame);
 };
