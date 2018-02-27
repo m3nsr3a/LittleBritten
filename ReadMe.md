@@ -37,6 +37,7 @@ Lets look at the _source code structure_ under `src` folder:
     * I use `bootstrap` package for some styles and minor view modifications.
     * `jquery_1.12.4.js`, the standard lib for working with DOM elements. 
     * `web3.js` for connection to Ethereum network.
+    * I make use of `glitch.js`, tiny lib, to make nice logos.
     * And finally, `truffle-contract.js` custom library from truffle to _wrap_ __Solidity__ contracts in __JS__.
     
 The system works as follows:
