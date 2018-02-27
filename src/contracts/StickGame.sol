@@ -105,6 +105,7 @@ contract StickGame is TwoPlayerGame {
 
 
     /* Holds game states, for each game. */
+    using Rules for Rules.State;
     mapping (bytes32 => Rules.State) gameStatesById;
 
     /* Represents probability, that the game initiator, will move first. */
@@ -217,7 +218,7 @@ contract StickGame is TwoPlayerGame {
         gameStatesById[gameId].move(xIndex, yIndex, msg.sender == gameStatesById[gameId].firstPlayer);
 
         /* If we went up to this point, then all is ok. */
-        Move(gameId, msg.sender, xIndex, yIndex);
+        GameMove(gameId, msg.sender, xIndex, yIndex);
         GameStateChanged(gameId, gameStatesById[gameId].state);
     }
 
@@ -233,7 +234,7 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - ID of the game, .
      */
     function getCurrentGameState(bytes32 gameId) public view returns (int8[64]) {
-        return gameStates[gameId].getCurrentGameState();
+        return gameStatesById[gameId].getCurrentGameState();
     }
 
     /*
@@ -242,7 +243,7 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - ID of the game, .
      */
     function getFirstPlayer(bytes32 gameId) public view returns (address) {
-        return gameStates[gameId].getFirstPlayer();
+        return gameStatesById[gameId].getFirstPlayer();
     }
 
 

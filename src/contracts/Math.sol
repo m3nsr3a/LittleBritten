@@ -13,7 +13,8 @@ library Math {
      */
 
 
-    uint private randNonce = 0;
+    /* Fair dice throw? */
+    uint constant private randNonce = 47;
 
 
     /*
@@ -124,7 +125,6 @@ library Math {
      * uint256 _modulus - Module for number fitting.
      */
     function randMod(uint _modulus) internal returns(uint) {
-        randNonce++;
         return uint(keccak256(now, msg.sender, randNonce)) % _modulus;
     }
 }

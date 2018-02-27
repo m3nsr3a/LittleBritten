@@ -61,7 +61,7 @@ contract TwoPlayerGame {
 
 
     /*
-     * Core inner functions functions.
+     * Core public functions.
      */
 
 
@@ -72,10 +72,10 @@ contract TwoPlayerGame {
      * string player1Alias - NickName of the player that creates the game.
      * bool isFirst - if true, this player will go first.
      */
-    function initGame(string player1Alias, bool isFirst) internal returns (bytes32) {
+    function initGame(string player1Alias, bool isFirst) public returns (bytes32) {
 
         /* Generate game id based on player's addresses and current block number. */
-        bytes32 gameId = sha3(msg.sender, block.number);
+        bytes32 gameId = keccak256(msg.sender, block.number);
 
         gamesById[gameId].isEnded = false;
 
@@ -99,7 +99,7 @@ contract TwoPlayerGame {
      * bytes32 gameId - ID of the game to join.
      * string player2Alias - NickName of the player that wants to join the game.
      */
-    function joinGame(bytes32 gameId, string player2Alias) internal {
+    function joinGame(bytes32 gameId, string player2Alias) public {
 
         /* First, check that game does't already have a second player. */
         require(gamesById[gameId].player2 != 0);
@@ -120,7 +120,7 @@ contract TwoPlayerGame {
      *
      * bytes32 gameId - Id of a game, in which sender want to surrender.
      */
-    function surrender(bytes32 gameId) internal {
+    function surrender(bytes32 gameId) public {
 
         /* First, check, that there are two players in the game. */
         require(
@@ -151,7 +151,7 @@ contract TwoPlayerGame {
      *
      * bytes32 gameId - the id of the closing game.
      */
-    function closeGame(bytes32 gameId) internal {
+    function closeGame(bytes32 gameId) public {
         /* Get the Game object from global mapping. */
         Game storage game = gamesById[gameId];
 
@@ -173,7 +173,7 @@ contract TwoPlayerGame {
      * uint256 xIndex - the x position on the grid.
      * uint256 yIndex - the y position on the grid.
      */
-    function makeMove(bytes32 gameId, uint256 xIndex, uint256 yIndex) internal {
+    function makeMove(bytes32 gameId, uint256 xIndex, uint256 yIndex) public {
 
         /*
          * The most interesting moment.
@@ -207,13 +207,13 @@ contract TwoPlayerGame {
         if (openGamesByIdHead == gameId) {
             /* If is head -> detach it, and zero-out. */
             openGamesByIdHead = openGamesById[openGamesByIdHead];
-            openGamesById[gameId] = 0;
+            openGamesById[gameId] = 0x0;
         } else {
             /* Otherwise unroll the LL, until needed, zero-out the element, relink the list. */
             for (var g = openGamesByIdHead; g != 'end' && openGamesById[g] != 'end'; g = openGamesById[g]) {
                 if (openGamesById[g] == gameId) {
                     openGamesById[g] = openGamesById[gameId];
-                    openGamesById[gameId] = 0;
+                    openGamesById[gameId] = 0x0;
                     break;
                 }
             }
@@ -232,7 +232,7 @@ contract TwoPlayerGame {
     function getOpenGameIds() public constant returns (bytes32[]) {
 
         /* Count total number of different open games. */
-        var counter = 0;
+        uint256 counter = 0;
         for (var ga = openGamesByIdHead; ga != 'end'; ga = openGamesById[ga]) {
             counter++;
         }
@@ -243,7 +243,7 @@ contract TwoPlayerGame {
          */
         bytes32[] memory data = new bytes32[](counter);
         var currentGame = openGamesByIdHead;
-        for (var i = 0; i < counter; i++) {
+        for (uint256 i = 0; i < counter; i++) {
             data[i] = currentGame;
             currentGame = openGamesById[currentGame];
         }

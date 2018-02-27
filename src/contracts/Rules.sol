@@ -3,7 +3,7 @@ pragma solidity ^0.4.18;
 /*
  *
  */
-contract Rules {
+library Rules {
 
 
     /*
@@ -14,16 +14,16 @@ contract Rules {
     /*
      * Initialise this entity.
      */
-    function Rules() public {
-        setDirection(Direction.UP, 0, 1);
-        setDirection(Direction.UP_RIGHT, 1, 1);
-        setDirection(Direction.RIGHT, 1, 0);
-        setDirection(Direction.DOWN_RIGHT, 1, -1);
-        setDirection(Direction.DOWN, 0, -1);
-        setDirection(Direction.DOWN_LEFT, -1, -1);
-        setDirection(Direction.LEFT, -1, 0);
-        setDirection(Direction.UP_LEFT, -1, 1);
-    }
+//    function Rules() public {
+//        setDirection(Direction.UP, 0, 1);
+//        setDirection(Direction.UP_RIGHT, 1, 1);
+//        setDirection(Direction.RIGHT, 1, 0);
+//        setDirection(Direction.DOWN_RIGHT, 1, -1);
+//        setDirection(Direction.DOWN, 0, -1);
+//        setDirection(Direction.DOWN_LEFT, -1, -1);
+//        setDirection(Direction.LEFT, -1, 0);
+//        setDirection(Direction.UP_LEFT, -1, 1);
+//    }
 
 
     /*
@@ -40,7 +40,7 @@ contract Rules {
     struct State {
         uint8 xMapMaxSize;
         uint8 yMapMaxSize;
-        mapping(int => mapping(int => Field)) fast_fields;
+        mapping(uint256 => mapping(uint256 => Field)) fast_fields;
         int8[64] state;
         uint8 occupiedLines;
         address firstPlayer;
@@ -70,17 +70,17 @@ contract Rules {
      *
      * Actually, what I wanted here is `mapping(Direction => int) public balances`, however it still doesn't work.
      */
-    mapping (bytes32 => int[2]) directions;
-
-
-
-    function getDirection(Direction direction) view internal returns(uint) {
-        return directions[sha3(direction)];
-    }
-
-    function setDirection(Direction direction, int xValue, int yValue) internal returns(int[2]){
-        return directions[sha3(direction)] = [xValue, yValue];
-    }
+//    mapping (bytes32 => int8[2]) directions;
+//
+//
+//
+//    function getDirection(Direction direction) view internal returns (int8[2]) {
+//        return directions[keccak256(direction)];
+//    }
+//
+//    function setDirection(Direction direction, int8 xValue, int8 yValue) internal returns (int8[2]) {
+//        return directions[keccak256(direction)] = [xValue, yValue];
+//    }
 
 
     function Players(Player p) constant internal returns (bool) {
@@ -128,17 +128,17 @@ contract Rules {
         );
 
         /* This should never happen... */
-        require(self.yMapMaxSize * self.xMapMaxSize < self.occupiedFields);
+        require(self.yMapMaxSize * self.xMapMaxSize < self.occupiedLines);
 
         /* Then check, that we don't step on already marked field. */
-        require(self.fields[xIndex][yIndex].flag == true);
+        require(self.fast_fields[xIndex][yIndex].flag == true);
     }
 
 
     function makeMove(State storage self, uint256 xIndex, uint256 yIndex, bool currentPlayerColor) internal {
 
-        self.fields[xIndex][yIndex].flag = true;
-        self.fields[xIndex][yIndex].isRed = currentPlayerColor;
+        self.fast_fields[xIndex][yIndex].flag = true;
+        self.fast_fields[xIndex][yIndex].isRed = currentPlayerColor;
 
 //        Check if we have nothing left to move.
 
@@ -148,23 +148,23 @@ contract Rules {
 
     }
 
-    function getAvailableMoves(State storage self) {
+    function getAvailableMoves(State storage self) internal returns (uint) {
 
     }
 
-    function getNumberOfMoves(State storage self) {
+    function getNumberOfMoves(State storage self) internal returns (uint) {
 
     }
 
-    function getFirstPlayer(State storage self) returns (address) {
+    function getFirstPlayer(State storage self) internal returns (address) {
 
     }
 
-    function getCurrentGameState(State storage self) returns (int8[64]) {
+    function getCurrentGameState(State storage self) internal returns (int8[64]) {
 
     }
 
-    function getStateByIndex(State storage self, uint256 xIndex, uint256 yIndex) returns (bool) {
+    function getStateByIndex(State storage self, uint256 xIndex, uint256 yIndex) internal returns (bool) {
 
     }
 }
