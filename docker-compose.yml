@@ -15,3 +15,9 @@ services:
     hostname: cite
     depends_on:
       - ledger
+    ports:
+      - "8080:8080"
+    links:
+      - ledger
+    environment:
+      - TESTNET=http://ledger:8545
