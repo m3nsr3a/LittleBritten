@@ -2,7 +2,8 @@ pragma solidity ^0.4.18;
 
 
 /*
- *
+ * This contract holds most of the internal logic, of
+ *  my game. There are also couple of helper methods.
  */
 contract TwoPlayerGame {
 
@@ -13,32 +14,12 @@ contract TwoPlayerGame {
 
 
     /*
-     * Initialise this entity.
+     * Simple initialization for this entity.
+     * Will set, the current head of LL, to special modifier - `end`.
      */
     function TwoPlayerGame() public {
         openGamesByIdHead = 'end';
     }
-
-
-    /*
-     * Events.
-     */
-
-
-    /*
-     * This event is triggered, when the game was closed for joining.
-     *
-     * bytes32 gameId - id of the game, that was closed.
-     * address player - address of the player, that closed the game.
-     */
-    event GameClosed(bytes32 indexed gameId, address indexed player);
-
-    /*
-     * This event is triggered, when the game had ended.
-     *
-     * bytes32 gameId - id of the game, that had ended.
-     */
-    event GameEnded(bytes32 indexed gameId);
 
 
     /*
@@ -80,38 +61,18 @@ contract TwoPlayerGame {
 
 
     /*
-     * Core public functions.
+     * Core inner functions functions.
      */
 
-
-    /*
-     * Close a game, if it may be closed -> notify about it.
-     *
-     * bytes32 gameId - the id of the closing game.
-     */
-    function closePlayerGame(bytes32 gameId) public {
-        /* Get the Game object from global mapping. */
-        var game = gamesById[gameId];
-
-        /* game already started and not finished yet. */
-        require(game.player2 != 0 && !game.isEnded);
-
-        /* Game can be closed only be involved players. */
-        require(msg.sender != game.player1 && msg.sender != game.player2);
-
-        /* If game was open -> close it. */
-        removeGameFromOpenGames(gameId);
-
-        GameClosed(gameId, msg.sender);
-    }
 
     /*
      * This function creates the game itself.
+     * Can be called, only
      *
      * string player1Alias - NickName of the player that creates the game.
      * bool isFirst - if true, this player will go first.
      */
-    function initGame(string player1Alias, bool isFirst) public returns (bytes32) {
+    function initGame(string player1Alias, bool isFirst) internal returns (bytes32) {
 
         /* Generate game id based on player's addresses and current block number. */
         bytes32 gameId = sha3(msg.sender, block.number);
@@ -138,7 +99,7 @@ contract TwoPlayerGame {
      * bytes32 gameId - ID of the game to join.
      * string player2Alias - NickName of the player that wants to join the game.
      */
-    function joinGame(bytes32 gameId, string player2Alias) public {
+    function joinGame(bytes32 gameId, string player2Alias) internal {
 
         /* First, check that game does't already have a second player. */
         require(gamesById[gameId].player2 != 0);
@@ -155,11 +116,17 @@ contract TwoPlayerGame {
     }
 
     /*
-     * Surrender the game. Notify that the game had ended.
+     * Surrender the game.
      *
      * bytes32 gameId - Id of a game, in which sender want to surrender.
      */
-    function surrender(bytes32 gameId) notEnded(gameId) public {
+    function surrender(bytes32 gameId) internal {
+
+        /* First, check, that there are two players in the game. */
+        require(
+            (gamesById[gameId].player1 != 0) && (gamesById[gameId].player2 != 0)
+        );
+
         /* If game have already ended -> trow. */
         require(gamesById[gameId].winner != 0);
 
@@ -177,13 +144,57 @@ contract TwoPlayerGame {
 
         /* Mark, that the game had ended. */
         gamesById[gameId].isEnded = true;
+    }
 
-        GameEnded(gameId);
+    /*
+     * Close a game(if it may be closed).
+     *
+     * bytes32 gameId - the id of the closing game.
+     */
+    function closeGame(bytes32 gameId) internal {
+        /* Get the Game object from global mapping. */
+        Game storage game = gamesById[gameId];
+
+        /* game already started and not finished yet. */
+        require(game.player2 != 0 && !game.isEnded);
+
+        /* Game can be closed only be involved players. */
+        require(msg.sender != game.player1 && msg.sender != game.player2);
+
+        /* If game was open -> close it. */
+        removeGameFromOpenGames(gameId);
+    }
+
+    /*
+     * Preform move in the game and notify everyone.
+     * After any move, the game may be won,
+     *
+     * bytes32 gameId - ID of the game, where move is preformed.
+     * uint256 xIndex - the x position on the grid.
+     * uint256 yIndex - the y position on the grid.
+     */
+    function makeMove(bytes32 gameId, uint256 xIndex, uint256 yIndex) internal {
+
+        /*
+         * The most interesting moment.
+         * Right here, we may just win the game.
+         *
+         * Check that and react appropriately.
+         */
+        //        ToDo:
+
+        /* Set up nextPlayer, based on the rules. */
+        if (msg.sender == gamesById[gameId].player1) {
+            gamesById[gameId].nextPlayer = gamesById[gameId].player2;
+        } else {
+            gamesById[gameId].nextPlayer = gamesById[gameId].player1;
+        }
+
     }
 
 
     /*
-     * Core inner functions.
+     * Inner helper functions.
      */
 
 
@@ -211,7 +222,7 @@ contract TwoPlayerGame {
 
 
     /*
-     * Helper functions.
+     * Public helper functions.
      */
 
 
@@ -247,21 +258,5 @@ contract TwoPlayerGame {
      */
     function isGameEnded(bytes32 gameId) public constant returns (bool) {
         return gamesById[gameId].isEnded;
-    }
-
-
-    /*
-     * Modifiers.
-     */
-
-
-    /*
-     * Will throw, if game had ended.
-     *
-     * bytes32 gameId - ID of the game to check.
-     */
-    modifier notEnded(bytes32 gameId) {
-        require(gamesById[gameId].isEnded);
-        _;
     }
 }

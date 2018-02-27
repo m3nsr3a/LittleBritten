@@ -1,5 +1,8 @@
 pragma solidity ^0.4.18;
 
+/*
+ *
+ */
 contract Rules {
 
 
@@ -20,14 +23,13 @@ contract Rules {
         setDirection(Direction.DOWN_LEFT, -1, -1);
         setDirection(Direction.LEFT, -1, 0);
         setDirection(Direction.UP_LEFT, -1, 1);
-
     }
-
 
 
     /*
      * Variables.
      */
+
 
     struct Field {
         bool isRed;
@@ -40,7 +42,7 @@ contract Rules {
         uint8 yMapMaxSize;
         mapping(int => mapping(int => Field)) fast_fields;
         int8[64] state;
-        uint8 occupiedFields;
+        uint8 occupiedLines;
         address firstPlayer;
         bool isFirstPlayer;
     }
@@ -57,12 +59,20 @@ contract Rules {
     }
 
 
+    enum Player {
+        RED,        // true
+        GREEN       // false
+    }
+
+
     /*
      *
      *
      * Actually, what I wanted here is `mapping(Direction => int) public balances`, however it still doesn't work.
      */
     mapping (bytes32 => int[2]) directions;
+
+
 
     function getDirection(Direction direction) view internal returns(uint) {
         return directions[sha3(direction)];
@@ -72,10 +82,6 @@ contract Rules {
         return directions[sha3(direction)] = [xValue, yValue];
     }
 
-    enum Player {
-        RED,        // true
-        GREEN       // false
-    }
 
     function Players(Player p) constant internal returns (bool) {
         if (p == Player.RED) {
@@ -139,6 +145,26 @@ contract Rules {
     }
 
     function checkLegality(State storage self, uint256 xIndex, uint256 yIndex, bool currentPlayerColor) internal {
+
+    }
+
+    function getAvailableMoves(State storage self) {
+
+    }
+
+    function getNumberOfMoves(State storage self) {
+
+    }
+
+    function getFirstPlayer(State storage self) returns (address) {
+
+    }
+
+    function getCurrentGameState(State storage self) returns (int8[64]) {
+
+    }
+
+    function getStateByIndex(State storage self, uint256 xIndex, uint256 yIndex) returns (bool) {
 
     }
 }

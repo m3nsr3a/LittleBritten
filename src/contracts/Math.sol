@@ -1,9 +1,9 @@
 pragma solidity ^0.4.18;
 
 /*
- * Simple math library that provides some use full error checking
- *  for standard math operations.
+ * Simple math library, with error checking.
  *
+ * Holds couple of useful functions.
  */
 library Math {
 

@@ -18,8 +18,8 @@ contract StickGame is TwoPlayerGame {
 
 
     /*
-     * Initialise this entity.
-     * Just empty constructor.
+     * Initialises this entity.
+     * Nothing fancy, just empty constructor.
      */
     function StickGame() TwoPlayerGame() public {}
 
@@ -45,7 +45,7 @@ contract StickGame is TwoPlayerGame {
 
     /*
      * Is triggered when somebody joins the game.
-     * Somebody must be some different person that player1(player1 != player2).
+     * Somebody must be some different person that player1(player2 != player1).
      *
      * bytes32 gameId - The ID of the created game.
      * address player1 - Address of the player, that created the game.
@@ -64,7 +64,8 @@ contract StickGame is TwoPlayerGame {
     /*
      * Will be send, when state of the game will change.
      * Well, basically after init, and move.
-     * For game end, we have special states.
+     *
+     * Note, that for end of the game, we have special event.
      *
      * bytes32 gameId - The ID of the game, whose state have changed.
      * int8[64] state - The current representation of game state.
@@ -79,7 +80,23 @@ contract StickGame is TwoPlayerGame {
      * uint256 xIndex - the x position on the grid.
      * uint256 yIndex - the y position on the grid.
      */
-    event Move(bytes32 indexed gameId, address indexed player, uint256 xIndex, uint256 yIndex);
+    event GameMove(bytes32 indexed gameId, address indexed player, uint256 xIndex, uint256 yIndex);
+
+    /*
+     * This event is triggered, when the game was closed for joining.
+     *
+     * bytes32 gameId - id of the game, that was closed.
+     * address player - address of the player, that closed the game.
+     */
+    event GameClosed(bytes32 indexed gameId, address indexed player);
+
+    /*
+     * This event is triggered, when the game had ended.
+     *
+     * bytes32 gameId - id of the game, that had ended.
+     * address player - address of the player, that won the game.
+     */
+    event GameEnded(bytes32 indexed gameId, address indexed player);
 
 
     /*
@@ -90,7 +107,7 @@ contract StickGame is TwoPlayerGame {
     /* Holds game states, for each game. */
     mapping (bytes32 => Rules.State) gameStatesById;
 
-    /* Represents probability, game creator, will be going first. */
+    /* Represents probability, that the game initiator, will move first. */
     uint player1FirstStepProbability = 50;
 
 
@@ -101,6 +118,9 @@ contract StickGame is TwoPlayerGame {
 
     /*
      * Create a new game and notify about it.
+     * Will return the unique modifier of the game.
+     *
+     * Generally, anyone can create a new game, so no restrictions on this function.
      *
      * string player1Alias - NickName of the player that creates the game.
      */
@@ -157,6 +177,30 @@ contract StickGame is TwoPlayerGame {
     }
 
     /*
+     * Close open game. Game either mustn't have second player,
+     *  or be already ended.
+     *
+     * bytes32 gameId - ID of the game to join.
+     * string player2Alias - NickName of the player that wants to join the game.
+     */
+    function closeGame(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) public {
+        super.closeGame(gameId);
+
+        GameClosed(gameId, msg.sender);
+    }
+
+    /*
+     * Surrender the game. Notify that the game had ended.
+     *
+     * bytes32 gameId - Id of a game, in which sender want to surrender.
+     */
+    function surrender(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) public {
+        super.surrender(gameId);
+
+        GameEnded(gameId, gamesById[gameId].winner);
+    }
+
+    /*
      * Preform move in the game and notify everyone.
      * After any move, the game may be won,
      *
@@ -164,28 +208,13 @@ contract StickGame is TwoPlayerGame {
      * uint256 xIndex - the x position on the grid.
      * uint256 yIndex - the y position on the grid.
      */
-    function move(bytes32 gameId, uint256 xIndex, uint256 yIndex) notEnded(gameId) onlyPlayers(gameId) public {
+    function makeMove(bytes32 gameId, uint256 xIndex, uint256 yIndex) notEnded(gameId) onlyPlayers(gameId) public {
 
         /* First, check, that it's this players turn. */
         require(msg.sender != gamesById[gameId].nextPlayer);
 
         /* Try to make the real move on grid. */
         gameStatesById[gameId].move(xIndex, yIndex, msg.sender == gameStatesById[gameId].firstPlayer);
-
-        /*
-         * The most interesting moment.
-         * Right here, we may just win the game.
-         *
-         * Check that and react appropriately.
-         */
-//        ToDo:
-
-        /* Set up nextPlayer, based on the rules. */
-        if (msg.sender == gamesById[gameId].player1) {
-            gamesById[gameId].nextPlayer = gamesById[gameId].player2;
-        } else {
-            gamesById[gameId].nextPlayer = gamesById[gameId].player1;
-        }
 
         /* If we went up to this point, then all is ok. */
         Move(gameId, msg.sender, xIndex, yIndex);
@@ -194,7 +223,7 @@ contract StickGame is TwoPlayerGame {
 
 
     /*
-     * Helper functions.
+     * Helper public functions.
      */
 
 
@@ -203,8 +232,8 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game, .
      */
-    function getCurrentGameState(bytes32 gameId) public constant returns (int8[128]) {
-        return gameStates[gameId].fields;
+    function getCurrentGameState(bytes32 gameId) public view returns (int8[64]) {
+        return gameStates[gameId].getCurrentGameState();
     }
 
     /*
@@ -212,8 +241,8 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game, .
      */
-    function getWhitePlayer(bytes32 gameId) public constant returns (address) {
-        return gameStates[gameId].playerWhite;
+    function getFirstPlayer(bytes32 gameId) public view returns (address) {
+        return gameStates[gameId].getFirstPlayer();
     }
 
 
@@ -224,33 +253,38 @@ contract StickGame is TwoPlayerGame {
      * uint256 xIndex - the x position on the grid.
      * uint256 yIndex - the y position on the grid.
      */
-    function getFlag(bytes32 gameId, uint256 xIndex, uint256 yIndex) public constant returns(bool flag) {
-        return flags[dynamicIndex][lengthTwoIndex];
+    function getStateByIndex(bytes32 gameId, uint256 xIndex, uint256 yIndex) public view returns (bool) {
+        return gameStatesById[gameId].getStateByIndex(xIndex, yIndex);
     }
 
     /*
      *
      *
-     * bytes32 gameId - ID of the game, .
+     * bytes32 gameId - ID of the game, to get number of `left moves`.
      */
-    function getNumberOfLeftMoves(bytes32 gameId) public constant returns(uint count) {
-        return flags.length;
+    function getNumberOfLeftMoves(bytes32 gameId) public view returns (uint) {
+        return 64 - gameStatesById[gameId].getNumberOfMoves();
     }
 
     /*
+     * Return number of 'empty lines', that there may be placed.
      *
-     *
-     * bytes32 gameId - ID of the game, .
+     * bytes32 gameId - ID of the game, to get `left moves`.
      */
-    function getLeftMoves(bytes32 gameId) public constant returns(uint count) {
-        return flags.length;
+    function getLeftMoves(bytes32 gameId) public view returns (uint) {
+        return gameStatesById[gameId].getAvailableMoves();
     }
+
+
+    /*
+     * Inner functions.
+     */
 
 
     /*
      * Determine, who is going to make move first.
      */
-    function determineFirstMove() internal constant returns(bool) {
+    function determineFirstMove() internal view returns(bool) {
         uint rand = Math.randMod(100);
         if (rand <= player1FirstStepProbability) {
             return true;
@@ -272,6 +306,16 @@ contract StickGame is TwoPlayerGame {
      */
     modifier onlyPlayers(bytes32 gameId) {
         require(gamesById[gameId].player1 != msg.sender && gamesById[gameId].player2 != msg.sender);
+        _;
+    }
+
+    /*
+     * Will throw, if game had ended.
+     *
+     * bytes32 gameId - ID of the game to check.
+     */
+    modifier notEnded(bytes32 gameId) {
+        require(gamesById[gameId].isEnded);
         _;
     }
 }
