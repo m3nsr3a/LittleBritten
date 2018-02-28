@@ -100,6 +100,11 @@ In order to start everything, a little bit of preparations are required:
     * Finally, run `docker-compose up --build`.
 4. As a last step, open your __Google Chrome__ browser at 'http://127.0.0.1:8080', and _enjoy the game_.
 
+It must look something like this.
+![Menu1](/doc/game_look.png)
+
+In case, you don't know the rules, check them [here](https://en.wikipedia.org/wiki/Dots_and_Boxes).
+
 ## [ToDo Log](#table-of-contents)
 
 - [x] __2 points__ - Write simple working example, with simple _web-server_ and _fronted_.
