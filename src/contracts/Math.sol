@@ -124,7 +124,7 @@ library Math {
      *
      * uint256 _modulus - Module for number fitting.
      */
-    function randMod(uint _modulus) internal returns(uint) {
+    function randMod(uint _modulus) internal view returns(uint) {
         return uint(keccak256(now, msg.sender, randNonce)) % _modulus;
     }
 }

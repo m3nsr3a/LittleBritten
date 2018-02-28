@@ -64,26 +64,7 @@ library Rules {
         GREEN       // false
     }
 
-
-    /*
-     *
-     *
-     * Actually, what I wanted here is `mapping(Direction => int) public balances`, however it still doesn't work.
-     */
-//    mapping (bytes32 => int8[2]) directions;
-//
-//
-//
-//    function getDirection(Direction direction) view internal returns (int8[2]) {
-//        return directions[keccak256(direction)];
-//    }
-//
-//    function setDirection(Direction direction, int8 xValue, int8 yValue) internal returns (int8[2]) {
-//        return directions[keccak256(direction)] = [xValue, yValue];
-//    }
-
-
-    function Players(Player p) constant internal returns (bool) {
+    function Players(Player p) internal pure returns (bool) {
         if (p == Player.RED) {
             return true;
         }
@@ -94,6 +75,7 @@ library Rules {
     function move(State storage self, uint256 xIndex, uint256 yIndex, bool isFirstPlayer) internal {
 
         bool currentPlayerColor;
+
         if (isFirstPlayer) {
             currentPlayerColor = Players(Player.RED);
         } else {
@@ -108,16 +90,13 @@ library Rules {
         /* Preform the move itself. */
         makeMove(self, xIndex, yIndex, currentPlayerColor);
 
-        /* Check, that the game is not over yet. */
-        checkLegality(self, xIndex, yIndex, currentPlayerColor);
-
     }
 
     /**
      * Validates if a move is technically (not legally) possible,
      * i.e. if piece is capable to move this way
      */
-    function checkMove(State storage self, uint256 xIndex, uint256 yIndex) internal {
+    function checkMove(State storage self, uint256 xIndex, uint256 yIndex) internal view {
 
         /* First, check that move is within the field. */
         require(
@@ -140,31 +119,26 @@ library Rules {
         self.fast_fields[xIndex][yIndex].flag = true;
         self.fast_fields[xIndex][yIndex].isRed = currentPlayerColor;
 
-//        Check if we have nothing left to move.
+        /* We store fields, in the row-like fashion. */
+        self.state[yIndex * self.xMapMaxSize + xIndex] = -1;
 
+        /* Decrease number of available fields. */
+        self.occupiedLines--;
     }
 
-    function checkLegality(State storage self, uint256 xIndex, uint256 yIndex, bool currentPlayerColor) internal {
-
+    function getNumberOfMoves(State storage self) internal view returns (uint) {
+        return self.occupiedLines;
     }
 
-    function getAvailableMoves(State storage self) internal returns (uint) {
-
+    function getFirstPlayer(State storage self) internal view returns (address) {
+        return self.firstPlayer;
     }
 
-    function getNumberOfMoves(State storage self) internal returns (uint) {
-
+    function getCurrentGameState(State storage self) internal view returns (int8[64]) {
+        return self.state;
     }
 
-    function getFirstPlayer(State storage self) internal returns (address) {
-
-    }
-
-    function getCurrentGameState(State storage self) internal returns (int8[64]) {
-
-    }
-
-    function getStateByIndex(State storage self, uint256 xIndex, uint256 yIndex) internal returns (bool) {
-
+    function getStateByIndex(State storage self, uint256 xIndex, uint256 yIndex) internal view returns (bool) {
+        return self.fast_fields[xIndex][yIndex].flag;
     }
 }

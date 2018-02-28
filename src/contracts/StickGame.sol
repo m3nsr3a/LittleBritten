@@ -217,9 +217,22 @@ contract StickGame is TwoPlayerGame {
         /* Try to make the real move on grid. */
         gameStatesById[gameId].move(xIndex, yIndex, msg.sender == gameStatesById[gameId].firstPlayer);
 
+        super.makeMove(gameId);
+
         /* If we went up to this point, then all is ok. */
         GameMove(gameId, msg.sender, xIndex, yIndex);
         GameStateChanged(gameId, gameStatesById[gameId].state);
+
+        if (gameStatesById[gameId].occupiedLines == 0) {
+            this.finishGame(gameId);
+        }
+    }
+
+    function finishGame(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) public {
+
+        super.finishGame(gameId, determineWin(gameId));
+
+        GameEnded(gameId, gamesById[gameId].winner);
     }
 
 
@@ -259,21 +272,12 @@ contract StickGame is TwoPlayerGame {
     }
 
     /*
-     *
+     * Return number of 'empty lines', that there may be placed.
      *
      * bytes32 gameId - ID of the game, to get number of `left moves`.
      */
     function getNumberOfLeftMoves(bytes32 gameId) public view returns (uint) {
         return 64 - gameStatesById[gameId].getNumberOfMoves();
-    }
-
-    /*
-     * Return number of 'empty lines', that there may be placed.
-     *
-     * bytes32 gameId - ID of the game, to get `left moves`.
-     */
-    function getLeftMoves(bytes32 gameId) public view returns (uint) {
-        return gameStatesById[gameId].getAvailableMoves();
     }
 
 
@@ -292,6 +296,18 @@ contract StickGame is TwoPlayerGame {
         } else {
             return false;
         }
+    }
+
+    /*
+     * This function, says, who won in the game.
+     * Note, that the draw, is also possible.
+     *
+     * @param bytes32 gameId - The Id of a game, where to find winner.
+     *
+     * @returns int choice - `-1` if player1 is the winner, `1` if player2, and `0` in case of a draw.
+     */
+    function determineWin(bytes32 gameId) internal view returns (int8 choice) {
+        return 1;
     }
 
 

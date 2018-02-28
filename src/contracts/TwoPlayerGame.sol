@@ -115,6 +115,32 @@ contract TwoPlayerGame {
         removeGameFromOpenGames(gameId);
     }
 
+    function finishGame(bytes32 gameId, int8 winChoice) public {
+
+        /* First, check, that there are two players in the game. */
+        require(
+            (gamesById[gameId].player1 != 0) && (gamesById[gameId].player2 != 0)
+        );
+
+        /* Set up, the winner. */
+        if (winChoice == 1) {
+            /* player1 won. */
+            gamesById[gameId].winner = gamesById[gameId].player1;
+        } else if (winChoice == 1) {
+            /* player2 won. */
+            gamesById[gameId].winner = gamesById[gameId].player2;
+        } else if (winChoice == 0) {
+            /* No winner. */
+            gamesById[gameId].winner = 0;
+        } else {
+            /* Strange state -> trow some error. */
+            revert();
+        }
+
+        /* Mark, that the game had ended. */
+        gamesById[gameId].isEnded = true;
+    }
+
     /*
      * Surrender the game.
      *
@@ -173,15 +199,7 @@ contract TwoPlayerGame {
      * uint256 xIndex - the x position on the grid.
      * uint256 yIndex - the y position on the grid.
      */
-    function makeMove(bytes32 gameId, uint256 xIndex, uint256 yIndex) public {
-
-        /*
-         * The most interesting moment.
-         * Right here, we may just win the game.
-         *
-         * Check that and react appropriately.
-         */
-        //        ToDo:
+    function makeMove(bytes32 gameId) public {
 
         /* Set up nextPlayer, based on the rules. */
         if (msg.sender == gamesById[gameId].player1) {
@@ -189,7 +207,6 @@ contract TwoPlayerGame {
         } else {
             gamesById[gameId].nextPlayer = gamesById[gameId].player1;
         }
-
     }
 
 
