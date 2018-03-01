@@ -39,6 +39,13 @@ App = {
                 });
 
         return App.initWeb3();
+
+
+        <!--Chess.joinGame($scope.gameId, $scope.username,-->
+        <!--{-->
+        <!--from: accounts.selectedAccount,-->
+        <!--value: web3.toWei($scope.etherbet.replace(',', '.'), 'ether')-->
+        <!--});-->
     },
 
     /* This functions creates the connection eth-test ledger(either straight, or through MetaMask). */
@@ -123,9 +130,3 @@ App = {
     }
 
 };
-
-$(function () {
-    $(window).load(function () {
-        App.init();
-    });
-});

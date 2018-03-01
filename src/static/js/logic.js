@@ -101,38 +101,6 @@ class Game {
         this._board = new Board(this, options.boardId, options.width, options.height);
     }
 
-    get players() {
-        return this._players;
-    }
-
-    get options() {
-        return this._options;
-    }
-
-    get curPlayer() {
-        return this._curPlayer;
-    }
-
-    get totalScore() {
-        return this._totalScore;
-    }
-
-    get displayCurrentPlayer() {
-        return this._displayCurrentPlayer;
-    }
-
-    get displayWinner() {
-        return this._displayWinner;
-    }
-
-    get displayTie() {
-        return this._displayTie;
-    }
-
-    get board() {
-        return this._board;
-    }
-
     /**
      * Private: This function generates vibrant, "evenly spaced" colours (i.e.
      * no clustering). This is ideal for creating easily distinguishable vibrant
@@ -280,6 +248,123 @@ class Game {
 
         // Let the current player know that it's their turn.
         this.notifyPlayer();
+    }
+
+
+    /**
+     * Private: Checks whether or not any boxes were completed. If so, they're
+     * marked as completed by the specified player. Returns number of newly
+     * completed squares.
+     */
+    checkBoxes(line) {
+
+        let lineX1 = line.vertex1.x;
+        let lineY1 = line.vertex1.y;
+        let lineX2 = line.vertex2.x;
+        let lineY2 = line.vertex2.y;
+
+        let score = 0;
+
+        // check squares on the top and bottom of the line
+        if ('horizontal' === line.getType) {
+
+            // top square
+            let topTop = this.getLine([lineX1, lineY1 - 1], [lineX2, lineY2 - 1]);
+            let topLeft = this.getLine([lineX1, lineY1 - 1], [lineX1, lineY1]);
+            let topRight = this.getLine([lineX2, lineY2 - 1], [lineX2, lineY2]);
+
+            if (topTop && topTop.isOwned &&
+                topLeft && topLeft.isOwned &&
+                topRight && topRight.isOwned) {
+                this.squares[topLeft.vertex1.y][topLeft.vertex1.x].claimOwnership(line.owner);
+                score++;
+            }
+
+            // bottom square
+            let bottomBottom = this.getLine([lineX1, lineY1 + 1], [lineX2, lineY2 + 1]);
+            let bottomLeft = this.getLine([lineX1, lineY1], [lineX1, lineY1 + 1]);
+            let bottomRight = this.getLine([lineX2, lineY2], [lineX2, lineY2 + 1]);
+
+            if (bottomBottom && bottomBottom.isOwned &&
+                bottomLeft && bottomLeft.isOwned &&
+                bottomRight && bottomRight.isOwned) {
+                this.squares[line.vertex1.y][line.vertex1.x].claimOwnership(line.owner);
+                score++;
+            }
+        }
+
+        // check squares to the left and right of the line
+        else {
+
+            // left square
+            let leftLeft = this.getLine([lineX1 - 1, lineY1], [lineX2 - 1, lineY2]);
+            let leftTop = this.getLine([lineX1 - 1, lineY1], [lineX1, lineY1]);
+            let leftBottom = this.getLine([lineX2 - 1, lineY2], [lineX2, lineY2]);
+
+            if (leftLeft && leftLeft.isOwned &&
+                leftTop && leftTop.isOwned &&
+                leftBottom && leftBottom.isOwned) {
+                this.squares[leftTop.vertex1.y][leftTop.vertex1.x].claimOwnership(line.owner);
+                score++;
+            }
+
+            // right square
+            let rightRight = this.getLine([lineX1 + 1, lineY1], [lineX2 + 1, lineY2]);
+            let rightTop = this.getLine([lineX1, lineY1], [lineX1 + 1, lineY1]);
+            let rightBottom = this.getLine([lineX2, lineY2], [lineX2 + 1, lineY2]);
+
+            if (rightRight && rightRight.isOwned &&
+                rightTop && rightTop.isOwned &&
+                rightBottom && rightBottom.isOwned) {
+                this.squares[line.vertex1.y][line.vertex1.x].claimOwnership(line.owner);
+                score++;
+            }
+        }
+
+        return score;
+    }
+
+    /**
+     * Public: Claims a line in the name of the specified player and checks
+     * for box completion by said player.
+     */
+    claimLine(player, line) {
+
+        line.claimOwnership(player);
+        return this.checkBoxes(line);
+    }
+
+
+    get players() {
+        return this._players;
+    }
+
+    get options() {
+        return this._options;
+    }
+
+    get curPlayer() {
+        return this._curPlayer;
+    }
+
+    get totalScore() {
+        return this._totalScore;
+    }
+
+    get displayCurrentPlayer() {
+        return this._displayCurrentPlayer;
+    }
+
+    get displayWinner() {
+        return this._displayWinner;
+    }
+
+    get displayTie() {
+        return this._displayTie;
+    }
+
+    get board() {
+        return this._board;
     }
 
 }

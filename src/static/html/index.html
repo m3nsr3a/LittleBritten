@@ -24,17 +24,28 @@
 
 
         <!-- Our code itself. -->
-        <script src="../../static/js/primitives/base.js"></script>
-        <script src="../../static/js/primitives/line.js"></script>
-        <script src="../../static/js/primitives/square.js"></script>
-        <script src="../../static/js/primitives/vertex.js"></script>
 
-        <script src="../../static/js/app.js"></script>
-        <script src="../../static/js/renderer.js"></script>
-        <script src="../../static/js/logic.js"></script>
-
+        <!-- Simple stylesheets for better UI. -->
         <link href="../../static/css/style.css" rel="stylesheet">
+
+        <!-- This are the drawing primitives, which are used to draw elements. -->
+        <script src="../js/rendering/primitives/base.js"></script>
+        <script src="../js/rendering/primitives/vertex.js"></script>
+        <script src="../js/rendering/primitives/line.js"></script>
+        <script src="../js/rendering/primitives/square.js"></script>
+
+        <!-- Renderer, which uses primitives to handle graphics. -->
+        <script src="../js/rendering/renderer.js"></script>
+
+        <!-- Primitive logic, that launches all drawing procedures. -->
+        <script src="../js/logic.js"></script>
+
+        <!-- Main file, that encapsulates all contract connection, registration and application callbacks. -->
+        <script src="../js/main.js"></script>
+
     </head>
+
+    <!-- That name SVG(No idea how it works, lol). -->
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50%" height="50%" class="filterwrapper">
         <defs>
             <svg id="glitchmask-r" width="100%" height="100%" viewbox="0 0 100 100" preserveAspectRatio="none">
@@ -83,10 +94,13 @@
             </filter>
         </defs>
     </svg>
+
     <body>
+
 
         <div id="container">
 
+            <!-- Carrier for that logo. -->
             <figure class="glitch-filter-example">
                 <svg
                         class="glitch-filter-example__demo"
@@ -106,95 +120,33 @@
                 </svg>
             </figure>
 
+            <!-- Displays, who moves now. -->
             <h4 id="current-player-display" style="display: none;">
                 Current player:
                 <span id="player-name"></span>
             </h4>
 
+            <!-- Is shown, when some user won. -->
             <h4 id="winner-display" style="display: none;">
                 <span id="winner-name"></span> wins!
             </h4>
 
             <div class="loader loader--style1" title="0"> </div>
 
+            <!-- Game graphics holder. -->
             <svg id="gameboard" height="600" width="600"></svg>
 
         </div>
 
+
+        <!-- Launch our logic.-->
         <script>
 
-            const game = new Game({
-
-                width: 4,
-                height: 4,
-                numPlayers: 2,
-                boardId: 'gameboard',
-
-                getPlayerData: function (playerNum) {
-
-                    let player = {};
-
-                    switch (playerNum) {
-
-                        case 1:
-                            player.name = 'Red';
-                            break;
-
-                        case 2:
-                            player.name = 'Blue';
-                            break;
-
-                        default:
-                            player.name = 'John Doe';
-                            break;
-                    }
-
-                    return player;
-                },
-
-                // Callback that displays the current player.
-                displayCurrentPlayer: function (player) {
-
-                    let playerName = document.getElementById('player-name');
-
-                    playerName.setAttribute('style', 'color: ' + player.color + ';');
-                    playerName.textContent = player.name;
-
-                    document.getElementById('current-player-display').setAttribute('style', 'display: block;');
-                },
-
-                /**********************************************************/
-
-                // Callback that announces the winner.
-                displayWinner: function (player) {
-
-                    // hide current player label
-                    document.getElementById('current-player-display').setAttribute('style', 'display: none;');
-
-                    // set and display winner
-                    let winnerName = document.getElementById('winner-name');
-                    winnerName.setAttribute('style', 'color: ' + player.color + ';');
-                    winnerName.textContent = player.name;
-                    document.getElementById('winner-display').setAttribute('style', 'display: block;');
-                },
-
-                /**********************************************************/
-
-                // Callback that announces a tie. The Game object supports
-                // an arbitrary number of players, but this callback is
-                // written specifically for two players.
-                displayTie: function (players) {
-
-                    // hide current player label
-                    document.getElementById('current-player-display').setAttribute('style', 'display: none;');
-
-                    // set and display tie message
-                    document.getElementById('winner-display').innerHTML = 'Ah, shucks... Looks like it was a tie!';
-                    document.getElementById('winner-display').setAttribute('style', 'display: block;');
-                }
+            $(function () {
+                $(window).load(function () {
+                    App.init();
+                });
             });
-
-            game.start();
 
         </script>
 

@@ -15,13 +15,14 @@ class Square extends DrawPrimitive {
      * offset - extra pixels to add to x and y due to the radius of the left-most
      *             dot pushing things down and right a little.
      */
-    constructor(board, x, y, offset) {
+    constructor(board, x, y, index, offset) {
         super();
 
         this._board = board;
         this._y = y;
         this._x = x;
         this._offset = offset;
+        this._index = index;
 
         this._owner = null;
 
@@ -43,6 +44,7 @@ class Square extends DrawPrimitive {
         square.setAttribute('width', this.board.squareWidth);
         square.setAttribute('height', this.board.squareHeight);
         square.setAttribute('fill', this.fill);
+        square.setAttribute('data-index', this.index);
         square.setAttribute(
             'style', 'opacity: ' + this.opacity + '; fill-opacity: ' + this.opacity + '; stroke-opacity: ' + this.opacity + ';'
         );
@@ -50,7 +52,7 @@ class Square extends DrawPrimitive {
         /* Set id, for this square, in order to retrieve later. */
         square.setAttribute(
             'id',
-            'square-' + this.x + '-' + this.y + '-' + this.fill
+            'square-' + this.x + '-' + this.y
         );
 
         this.board.svg.appendChild(square);
@@ -86,6 +88,10 @@ class Square extends DrawPrimitive {
 
     get x() {
         return this._x;
+    }
+
+    get index() {
+        return this._index;
     }
 
     get y() {
