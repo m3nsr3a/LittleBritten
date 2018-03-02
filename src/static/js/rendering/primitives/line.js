@@ -16,7 +16,7 @@ class Line extends DrawPrimitive {
     constructor(board, type, index, vertex1, vertex2) {
         super();
 
-        this._board = board;
+        this._renderer = board;
         this._type = type;
         this._index = index;
         this._vertex1 = vertex1;
@@ -95,7 +95,7 @@ class Line extends DrawPrimitive {
     }
 
     get board() {
-        return this._board;
+        return this._renderer;
     }
 
     get getType() {

@@ -37,7 +37,7 @@ class Game {
         this._totalScore = 0;
 
         // Private: The game board.
-        this._board = null;
+        this._renderer = null;
 
         // Private: Optional callback that displays information about the current player.
         this._displayCurrentPlayer = false;
@@ -49,7 +49,6 @@ class Game {
         this._displayTie = false;
 
         this._options = options;
-        console.log(options.numPlayers);
 
         /*************************************************************************/
 
@@ -69,36 +68,71 @@ class Game {
             throw "the id of the gameboard's SVG tag must be specified";
         }
 
-        // Required callback that provides the game with information about a player.
-        if (typeof(options.getPlayerData) !== 'function') {
-            throw "getPlayerData must be set and must be a function";
+        this._renderer = new Renderer(this, options.boardId, options.width, options.height);
+    }
+
+
+    getPlayerData(playerNum) {
+
+        let player = {};
+
+        switch (playerNum) {
+
+            case 1:
+                player.name = 'Red';
+                break;
+
+            case 2:
+                player.name = 'Blue';
+                break;
+
+            default:
+                player.name = 'John Doe';
+                break;
         }
 
-        if (typeof(options.displayCurrentPlayer) !== 'undefined') {
-            if ('function' === typeof(options.displayCurrentPlayer)) {
-                this._displayCurrentPlayer = options.displayCurrentPlayer;
-            } else {
-                throw "displayCurrentPlayer must be a function";
-            }
-        }
+        return player;
+    }
 
-        if (typeof(options.displayWinner) !== 'undefined') {
-            if ('function' === typeof(options.displayWinner)) {
-                this._displayWinner = options.displayWinner;
-            } else {
-                throw "displayWinner must be a function";
-            }
-        }
+    // Callback that displays the current player.
+    displayCurrentPlayer(player) {
 
-        if (typeof(options.displayTie) !== 'undefined') {
-            if ('function' === typeof(options.displayTie)) {
-                this._displayTie = options.displayTie;
-            } else {
-                throw "displayTie must be a function";
-            }
-        }
+        let playerName = document.getElementById('player-name');
 
-        this._board = new Board(this, options.boardId, options.width, options.height);
+        playerName.setAttribute('style', 'color: ' + player.color + ';');
+        playerName.textContent = player.name;
+
+        document.getElementById('current-player-display').setAttribute('style', 'display: block;');
+    }
+
+    /**********************************************************/
+
+    // Callback that announces the winner.
+    displayWinner(player) {
+
+        // hide current player label
+        document.getElementById('current-player-display').setAttribute('style', 'display: none;');
+
+        // set and display winner
+        let winnerName = document.getElementById('winner-name');
+        winnerName.setAttribute('style', 'color: ' + player.color + ';');
+        winnerName.textContent = player.name;
+        document.getElementById('winner-display').setAttribute('style', 'display: block;');
+    }
+
+    /**********************************************************/
+
+    // Callback that announces a tie. The Game object supports
+    // an arbitrary number of players, but this callback is
+    // written specifically for two players.
+    displayTie(players) {
+
+        // hide current player label
+        document.getElementById('current-player-display').setAttribute('style', 'display: none;');
+
+        // set and display tie message
+        document.getElementById('winner-display').innerHTML = 'Ah, shucks... Looks like it was a tie!';
+        document.getElementById('winner-display').setAttribute('style', 'display: block;');
     }
 
     /**
@@ -209,7 +243,36 @@ class Game {
     /**
      * Public: Starts the game.
      */
-    start() {
+    start(options) {
+
+        // Required callback that provides the game with information about a player.
+        if (typeof(options.getPlayerData) !== 'function') {
+            throw "getPlayerData must be set and must be a function";
+        }
+
+        if (typeof(options.displayCurrentPlayer) !== 'undefined') {
+            if ('function' === typeof(options.displayCurrentPlayer)) {
+                this._displayCurrentPlayer = options.displayCurrentPlayer;
+            } else {
+                throw "displayCurrentPlayer must be a function";
+            }
+        }
+
+        if (typeof(options.displayWinner) !== 'undefined') {
+            if ('function' === typeof(options.displayWinner)) {
+                this._displayWinner = options.displayWinner;
+            } else {
+                throw "displayWinner must be a function";
+            }
+        }
+
+        if (typeof(options.displayTie) !== 'undefined') {
+            if ('function' === typeof(options.displayTie)) {
+                this._displayTie = options.displayTie;
+            } else {
+                throw "displayTie must be a function";
+            }
+        }
 
         console.log(this.options.numPlayers);
 
@@ -364,7 +427,7 @@ class Game {
     }
 
     get board() {
-        return this._board;
+        return this._renderer;
     }
 
 }

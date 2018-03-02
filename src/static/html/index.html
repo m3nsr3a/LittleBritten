@@ -29,19 +29,19 @@
         <link href="../../static/css/style.css" rel="stylesheet">
 
         <!-- This are the drawing primitives, which are used to draw elements. -->
-        <script src="../js/rendering/primitives/base.js"></script>
-        <script src="../js/rendering/primitives/vertex.js"></script>
-        <script src="../js/rendering/primitives/line.js"></script>
-        <script src="../js/rendering/primitives/square.js"></script>
+        <script src="../../static/js/rendering/primitives/base.js"></script>
+        <script src="../../static/js/rendering/primitives/vertex.js"></script>
+        <script src="../../static/js/rendering/primitives/line.js"></script>
+        <script src="../../static/js/rendering/primitives/square.js"></script>
 
         <!-- Renderer, which uses primitives to handle graphics. -->
-        <script src="../js/rendering/renderer.js"></script>
+        <script src="../../static/js/rendering/renderer.js"></script>
 
         <!-- Primitive logic, that launches all drawing procedures. -->
-        <script src="../js/logic.js"></script>
+        <script src="../../static/js/logic.js"></script>
 
         <!-- Main file, that encapsulates all contract connection, registration and application callbacks. -->
-        <script src="../js/main.js"></script>
+        <script src="../../static/js/main.js"></script>
 
     </head>
 
@@ -97,7 +97,6 @@
 
     <body>
 
-
         <div id="container">
 
             <!-- Carrier for that logo. -->
@@ -120,24 +119,55 @@
                 </svg>
             </figure>
 
-            <!-- Displays, who moves now. -->
-            <h4 id="current-player-display" style="display: none;">
-                Current player:
-                <span id="player-name"></span>
-            </h4>
+            <div data-role="start" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
 
-            <!-- Is shown, when some user won. -->
-            <h4 id="winner-display" style="display: none;">
-                <span id="winner-name"></span> wins!
-            </h4>
+                <div>
+                    <label for="account-select" style="display: block; margin: 3px">Account</label>
 
-            <div class="loader loader--style1" title="0"> </div>
+                    <select id="account-select" style="width: 100%">
+                        <option> Click to check available accounts. </option>
+                    </select>
 
-            <!-- Game graphics holder. -->
-            <svg id="gameboard" height="600" width="600"></svg>
+                    <div id="create-game" class="btn">Create New Game</div>
+
+                    <hr>
+
+                    <label for="address-input" style="display: block; margin: 3px">Join Game(Chose your Opponent)</label>
+
+                    <select id="address-input" style="width: calc(100% - 8px)">
+                        <option> Click to get available games. </option>
+                    </select>
+
+                    <div id="join" class="btn">Join</div>
+
+                </div>
+
+            </div>
+
+            <div data-role="game" style="display: none;">
+
+                <div id="game-id" style="position: fixed; top: 5px; right: 5px"></div>
+
+
+                <!-- Displays, who moves now. -->
+                <h4 id="current-player-display" style="display: none;">
+                    Current player:
+                    <span id="player-name"></span>
+                </h4>
+
+                <!-- Is shown, when some user won. -->
+                <h4 id="winner-display" style="display: none;">
+                    <span id="winner-name"></span> wins!
+                </h4>
+
+                <div class="loader loader--style1" title="0"> </div>
+
+                <!-- Game graphics holder. -->
+                <svg id="game-board" height="600" width="600"></svg>
+
+            </div>
 
         </div>
-
 
         <!-- Launch our logic.-->
         <script>

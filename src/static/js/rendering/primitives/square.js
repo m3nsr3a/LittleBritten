@@ -18,7 +18,7 @@ class Square extends DrawPrimitive {
     constructor(board, x, y, index, offset) {
         super();
 
-        this._board = board;
+        this._renderer = board;
         this._y = y;
         this._x = x;
         this._offset = offset;
@@ -99,7 +99,7 @@ class Square extends DrawPrimitive {
     }
 
     get board() {
-        return this._board;
+        return this._renderer;
     }
 
     get offset() {

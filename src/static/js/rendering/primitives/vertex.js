@@ -13,7 +13,7 @@ class Vertex extends DrawPrimitive {
     constructor(board, x, y) {
         super();
 
-        this._board = board;
+        this._renderer = board;
         this._y = y;
         this._x = x;
 
@@ -88,7 +88,7 @@ class Vertex extends DrawPrimitive {
     }
 
     get board() {
-        return this._board;
+        return this._renderer;
     }
 
     get radius() {

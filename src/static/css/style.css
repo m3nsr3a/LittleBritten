@@ -13,7 +13,7 @@ body {
 	margin: 25px;
 }
 
-#gameboard {
+#game-board {
 	margin-top: 20px;
 	margin-left: 20px;
 }
@@ -42,4 +42,7 @@ body {
     border-bottom: 1px dashed;
     padding-bottom: 1em;
     font-weight: lighter;
+}
+#create-game:hover {
+    color: #ffff00;
 }
