@@ -131,7 +131,7 @@ contract StickGame is TwoPlayerGame {
          * User, who created a game, is randomly assigned, if he is going to move first or second.
          * Then the game object is created, and stored in memory.
          */
-        bytes32 gameId = super.initGame(player1Alias, determineFirstMove());
+        bytes32 gameId = _initGame(player1Alias, determineFirstMove());
 
         /* Currently set, the default values. */
         gameStatesById[gameId].yMapMaxSize = 8;

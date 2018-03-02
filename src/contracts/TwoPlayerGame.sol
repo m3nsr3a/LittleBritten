@@ -72,10 +72,10 @@ contract TwoPlayerGame {
      * string player1Alias - NickName of the player that creates the game.
      * bool isFirst - if true, this player will go first.
      */
-    function initGame(string player1Alias, bool isFirst) public returns (bytes32) {
+    function _initGame(string player1Alias, bool isFirst) internal returns (bytes32) {
 
         /* Generate game id based on player's addresses and current block number. */
-        bytes32 gameId = keccak256(msg.sender, block.number);
+        bytes32 gameId = keccak256(msg.sender, block.number, now);
 
         gamesById[gameId].isEnded = false;
 
