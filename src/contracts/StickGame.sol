@@ -33,6 +33,7 @@ contract StickGame is TwoPlayerGame {
      * Is triggered, when any user `creates` a new game.
      *
      * bytes32 gameId - The ID of the created game.
+     * address player1Address - Address of the player, that created the game.
      * bytes32 player1Alias - NickName of the player that created the game.
      * uint8 boardSizeX - X-axis dimension size of the board.
      * uint8 boardSizeY - Y-axis dimension size of the board.
@@ -41,6 +42,7 @@ contract StickGame is TwoPlayerGame {
      */
     event GameInitialized(
         bytes32 indexed gameId,
+        address indexed player1Address,
         bytes32 player1Alias,
         uint8 boardSizeX,
         uint8 boardSizeY,
@@ -80,8 +82,9 @@ contract StickGame is TwoPlayerGame {
      * This event is triggered, when the game was manually closed for joining.
      *
      * bytes32 gameId - id of the game, that was closed.
+     * address playerAddress - Address of the player, that closed the game.
      */
-    event GameClosed(bytes32 indexed gameId);
+    event GameClosed(bytes32 indexed gameId, address indexed playerAddress);
 
     /*
      * This event is triggered, when the game had ended.
@@ -120,11 +123,14 @@ contract StickGame is TwoPlayerGame {
      * uint8 boardSizeX - X-axis dimension size of the board.
      * uint8 boardSizeY - Y-axis dimension size of the board.
      * uint8 numberOfPlayers - Total number of player needed for the game to run.
+     *
+     * NOTE: STATE-CHANGING FUNCTION DON'T RETURN THEIR VALUES.
+     *  THEY RETURN THE TRANSACTION HASH, OF WHICH THEY WERE INCLUDED INTO LEDGER CHAIN.
      */
     function initGame(
         string player1Alias, uint8 boardSizeX,
         uint8 boardSizeY, uint8 numberOfPlayers
-    ) public returns (bytes32, bool) {
+    ) public returns (bytes32) {
 
         /*
          * User, who created a game, is randomly assigned, if he is going to move first or second.
@@ -141,11 +147,15 @@ contract StickGame is TwoPlayerGame {
         if (gamesById[gameId].nextPlayer != 0) {
             gameStatesById[gameId].firstPlayer   = msg.sender;
             gameStatesById[gameId].isFirstPlayer = true;
+        } else {
+            /* Explicitly state it. */
+            gameStatesById[gameId].isFirstPlayer = false;
         }
 
         /* Finally, sent notification events. */
         GameInitialized(
             gameId,
+            msg.sender,
             stringToBytes32(player1Alias),
             boardSizeX,
             boardSizeY,
@@ -153,7 +163,7 @@ contract StickGame is TwoPlayerGame {
             gameStatesById[gameId].isFirstPlayer
         );
 
-        return (gameId, gameStatesById[gameId].isFirstPlayer);
+        return gameId;
     }
 
     /*
@@ -189,9 +199,9 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - ID of the game to join.
      */
     function closeGame(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) public {
-        super._closeGame(gameId);
+        _closeGame(gameId);
 
-        GameClosed(gameId);
+        GameClosed(gameId, msg.sender);
     }
 
     /*
@@ -325,7 +335,7 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - ID of the game to check.
      */
     modifier onlyPlayers(bytes32 gameId) {
-        require(gamesById[gameId].player1 != msg.sender && gamesById[gameId].player2 != msg.sender);
+        require(gamesById[gameId].player1 == msg.sender || gamesById[gameId].player2 == msg.sender);
         _;
     }
 
@@ -335,7 +345,7 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - ID of the game to check.
      */
     modifier notEnded(bytes32 gameId) {
-        require(gamesById[gameId].isEnded);
+        require(!gamesById[gameId].isEnded);
         _;
     }
 }
