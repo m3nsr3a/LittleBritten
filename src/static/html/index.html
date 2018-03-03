@@ -28,6 +28,9 @@
         <!-- Simple stylesheets for better UI. -->
         <link href="../../static/css/style.css" rel="stylesheet">
 
+        <!-- Cool looking alerts. -->
+        <script src="../../static/js/alert.js"></script>
+
         <!-- This are the drawing primitives, which are used to draw elements. -->
         <script src="../../static/js/rendering/primitives/base.js"></script>
         <script src="../../static/js/rendering/primitives/vertex.js"></script>
@@ -128,15 +131,28 @@
                         <option> Click to check available accounts. </option>
                     </select>
 
+                    <p>
+                        <b>NickName handle:</b><br>
+                        <input id="nick-name" type="text" size="40" title="">
+                    </p>
+
                     <div id="create-game" class="btn">Create New Game</div>
 
                     <hr>
 
-                    <label for="address-input" style="display: block; margin: 3px">Join Game(Chose your Opponent)</label>
+                    <label for="opponents-table" style="display: block; margin: 3px">Join Game(Chose your Opponent)</label>
 
-                    <select id="address-input" style="width: calc(100% - 8px)">
-                        <option> Click to get available games. </option>
-                    </select>
+                    <table id="opponents-table">
+                        <tbody>
+                            <tr>
+                                <th>Player Name</th>
+                                <th>Game-board Size X</th>
+                                <th>Game-board Size Y</th>
+                                <th>Number of Players</th>
+                                <th>Who's moves first</th>
+                            </tr>
+                        </tbody>
+                    </table>
 
                     <div id="join" class="btn">Join</div>
 
@@ -164,6 +180,27 @@
 
                 <!-- Game graphics holder. -->
                 <svg id="game-board" height="600" width="600"></svg>
+
+            </div>
+
+            <div data-role="wait" class="overlay-message" style="display: none;">
+
+            </div>
+
+            <div data-role="wait-for-game" style="display: none;">
+
+                <h4 id="actual-player-display">
+                    Current player:
+                    <span id="actual-player-nick-name"></span>
+                    <span id="actual-moving-statement"></span>
+                    <span id="actual-game-size"></span>
+                    <span id="actual-game-id"></span>
+                    <span id="actual-number-of-players"></span>
+                </h4>
+
+                <button class="closeGameButton" type="button">
+                    CLICK TO CLOSE
+                </button>
 
             </div>
 
