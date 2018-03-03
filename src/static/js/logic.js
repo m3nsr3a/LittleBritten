@@ -1,202 +1,189 @@
 /**
- * Game --
- * Main entrypoint to the "Dots and Boxes" game. Provides public methods to
- * start a game and to complete a turn (the latter is ordinarily called by a
- * Line's onclick event handler.) Game handles scoring and interfaces with the
- * UI via user-defined callbacks.
+ * GameLogic object, that is a `thin` wrapper for the renderer class.
  *
- * Constructor Input:
- *   - An object containing configuration information for the game. Some are
- *     required and some are optional. The following options can be set:
+ * Since our game logic, is located on smart contracts, this class is only in charge
+ *  of handling events, that are connected to drawing operations.
  *
- *     width (required) - number of squares in the horizontal direction
- *     height (required) - number of squares in the vertical direction
- *     numPlayers (required) - number of players in the game
- *     boardId (required) - HTML ID of the gameboard's SVG element
- *     getPlayerData (required) - user-defined callback that retrieves information
- *                                about each player
- *     displayCurrentPlayer (optional) - user-defined callback that displays the
- *                                       current player
- *     displayWinner (optional) - user-defined callback that displays the winner
- *                                when the game ends (if there is a winner)
- *     displayTie (optional) - user-defined callback that displays the results of
- *                             a tie
+ * What it does, is provides thin wrapper for the renderer class, and manages state of
+ *  the game. Also it holds configuration for the current game.
  */
 class Game {
 
+    /**
+     * The default constructor for the GameLogic object.
+     *
+     * options.width - Number of squares in the horizontal direction.
+     * options.height - Number of squares in the vertical direction.
+     * options.numPlayers - Number of players in the game.
+     * options.svgId - Unique name of the HTML element, that will hold the graphics.
+     */
     constructor(options) {
 
-        // Private: Represents players in the game.
+        /* Represents players in the game. */
         this._players = [];
 
-        // Private: Index pointing to the current player in players.
+        /* Index that points to the current player in players. */
         this._curPlayer = 0;
 
-        // Once this adds up to the total number of squares, we declare a winner
-        // (or maybe a tie?)
-        this._totalScore = 0;
+        /* Index that points to `us` as a player in the player array. */
+        this._us = 0;
 
-        // Private: The game board.
-        this._renderer = null;
+        /* Number of squares, that are occupied. */
+        this._occupiedSquares = 0;
 
-        // Private: Optional callback that displays information about the current player.
-        this._displayCurrentPlayer = false;
+        /* If on, that means we are waiting for some move conformation on the ledger. */
+        this._isWaitingForConformation = false;
 
-        // Private: Optional callback that announces the winner.
-        this._displayWinner = false;
+        /* Is true, when the game came to it's logical end. */
+        this._anounceWinnerIsPossible = false;
 
-         // Private: Optional callback that announces a tie.
-        this._displayTie = false;
+        /* Object, that makes the actual drawing happens. */
+        this._renderer = new Renderer(this, options.svgId, options.width, options.height);
 
+        /* Parameters of the current game. */
         this._options = options;
 
-        /*************************************************************************/
-
         if (typeof(options.width) !== 'number' || options.width < 1) {
-            throw "width must be at least 1";
+            throw "Width must be at least 1.";
         }
 
         if (typeof(options.height) !== 'number' || options.height < 1) {
-            throw "height must be at least 1";
+            throw "Height must be at least 1.";
         }
 
         if (typeof(options.numPlayers) !== 'number' || options.numPlayers < 2) {
-            throw "numPlayers must be set and must be an integer greater than or equal to 2";
+            throw "There must be at least 2 player in the game.";
         }
 
-        if (typeof(options.boardId) !== 'string' || options.boardId.length < 1) {
-            throw "the id of the gameboard's SVG tag must be specified";
+        if (typeof(options.svgId) !== 'string' || options.svgId.length < 1) {
+            throw "The id of the HTML SVG element must be specified.";
         }
 
-        this._renderer = new Renderer(this, options.boardId, options.width, options.height);
-    }
-
-
-    getPlayerData(playerNum) {
-
-        let player = {};
-
-        switch (playerNum) {
-
-            case 1:
-                player.name = 'Red';
-                break;
-
-            case 2:
-                player.name = 'Blue';
-                break;
-
-            default:
-                player.name = 'John Doe';
-                break;
+        if (typeof(options.application) !== 'object') {
+            throw "The application object wasn't passed.";
         }
 
-        return player;
-    }
-
-    // Callback that displays the current player.
-    displayCurrentPlayer(player) {
-
-        let playerName = document.getElementById('player-name');
-
-        playerName.setAttribute('style', 'color: ' + player.color + ';');
-        playerName.textContent = player.name;
-
-        document.getElementById('current-player-display').setAttribute('style', 'display: block;');
-    }
-
-    /**********************************************************/
-
-    // Callback that announces the winner.
-    displayWinner(player) {
-
-        // hide current player label
-        document.getElementById('current-player-display').setAttribute('style', 'display: none;');
-
-        // set and display winner
-        let winnerName = document.getElementById('winner-name');
-        winnerName.setAttribute('style', 'color: ' + player.color + ';');
-        winnerName.textContent = player.name;
-        document.getElementById('winner-display').setAttribute('style', 'display: block;');
-    }
-
-    /**********************************************************/
-
-    // Callback that announces a tie. The Game object supports
-    // an arbitrary number of players, but this callback is
-    // written specifically for two players.
-    displayTie(players) {
-
-        // hide current player label
-        document.getElementById('current-player-display').setAttribute('style', 'display: none;');
-
-        // set and display tie message
-        document.getElementById('winner-display').innerHTML = 'Ah, shucks... Looks like it was a tie!';
-        document.getElementById('winner-display').setAttribute('style', 'display: block;');
     }
 
     /**
-     * Private: This function generates vibrant, "evenly spaced" colours (i.e.
-     * no clustering). This is ideal for creating easily distinguishable vibrant
-     * markers in Google Maps and other apps.
-     * Adam Cole, 2011-Sept-14
-     * HSV to RBG adapted from:
-     * http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
-     * And I (James Colannino) stole this from:
-     * http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript
+     * Starts the game, for the configuration provided.
      */
-    static getPlayerColor(numOfSteps, step) {
+    start(options) {
 
-        let r, g, b;
-        let h = step / numOfSteps;
-        let i = ~~(h * 6);
-        let f = h * 6 - i;
-        let q = 1 - f;
-
-        switch(i % 6) {
-            case 0: r = 1, g = f, b = 0; break;
-            case 1: r = q, g = 1, b = 0; break;
-            case 2: r = 0, g = 1, b = f; break;
-            case 3: r = 0, g = q, b = 1; break;
-            case 4: r = f, g = 0, b = 1; break;
-            case 5: r = 1, g = 0, b = q; break;
+        if (typeof(options.playerInfo) !== 'object') {
+            throw "The information about player is not provided.";
         }
 
-        return "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) +
-            ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" +
-                (~ ~(b * 255)).toString(16)).slice(-2);
+        /* Create the players array, from the provided information. */
+        this.buildPlayers(options.playerInfo);
+
+        /* Draw the underlying graphics. */
+        this.renderer.init();
+        this.renderer.draw();
+
+        /* Show current player. */
+        this.notifyPlayer();
     }
 
     /**
-     * Private: Retrieves information for each player in the game. Calls a
-     * user-supplied method for retrieving the player's data.
+     * Is called, then the player is pressing on the line.
+     *
+     * We check, that it's current user turn.
+     *  - If it is, and such move is possible -> send the event to net, for it to recheck again.
+     *  - It it's not, show alert.
      */
-    getPlayers() {
+    completeTurn(lineObject) {
 
-        for (let i = 0; i < this.options.numPlayers; i++) {
-
-            this.players[i] = this.options.getPlayerData(i + 1);
-            this.players[i].index = i;
-            this.players[i].score = 0;
-            this.players[i].color = Game.getPlayerColor(this.options.numPlayers, i);
-
+        if (lineObject.owner) {
+            this.showAlert('Warning!', "You can't claim already claimed line!");
+            return;
         }
+
+        if (this.curPlayerId !== this.ourIndex) {
+            this.showAlert('Warning!', "It's not your turn, to make move!");
+            return;
+        }
+
+        if (this.isWaitingForConformation) {
+            this.showAlert('Warning!', "Can't make new move, because waiting for conformation!");
+            return;
+        }
+
+        /*
+         * If, we are here, we try to claim the line.
+         * So, we call the function on the contract.
+         */
+
+        this.possilbeClaim = lineObject;
+        // ToDo: call to eth.
+
+        /*
+         * Since it takes time, we are going to wait.
+         * We wont draw anything yet, just show, that we are waiting for something.
+         */
+
+        this._isWaitingForConformation = true;
+
+        this.options.application.$gameScreen.hide();
+        this.options.application.$waitScreen.show();
     }
 
     /**
-     * Private: notifies the current player that it's their turn.
+     * This function is called, when we get event, MakeMove from the Ethereum ledger,
+     *  that belongs to our gameId.
+     *
+     * So, we check:
+     *  - If it was somebody else move -> draw it straightaway(since smart-contracts don't lie).
+     *  - It it was our move -> continue, where we left.
      */
-    notifyPlayer() {
+    drawLine(xCoordinate, yCoordinate, moveOwner) {
 
-        // If we were given a callback, use it to display information about the
-        // current player
-        if (this.displayCurrentPlayer) {
-            this.displayCurrentPlayer(this.players[this.curPlayer]);
+        /* Get the line, we are trying to draw by the coordinate. */
+        let line = this.renderer.getLine(xCoordinate, yCoordinate);
+
+        if (this.curPlayerObject.internalId === moveOwner) {
+
+            this._completeTurn(line);
+
+            /* And, since the other player made the move, we can make ours. */
+
+            this.options.application.$waitScreen.hide();
+            this.options.application.$gameScreen.show();
+
+        } else {
+            /*
+             * That means, we are drawing our previous move.
+             *
+             * However, just check one more time, that it's indeed `that` move.
+             */
+
+            if (this.possilbeClaim === line) {
+
+
+                this.possilbeClaim = null;
+                this._isWaitingForConformation = false;
+
+                this._completeTurn(line);
+
+            } else {
+                console.log('Looks like we got some drawing event from the past.');
+                return;
+            }
+        }
+
+        this.togglePlayer();
+
+        // Let the current player know that it's their turn.
+        this.notifyPlayer();
+
+        /* Finally, we check, that the game is already complete. */
+        if (this.occupiedSquares === this.options.width * this.options.height) {
+            this._anounceWinnerIsPossible = true;
         }
     }
 
     /**
-     * Private: Increments the current player.
+     * Change the player.
      */
     togglePlayer() {
 
@@ -204,10 +191,21 @@ class Game {
         this._curPlayer %= this.options.numPlayers;
     }
 
+
+    /* Inner methods of the class. */
+
     /**
-     * Private: Figure out who won the game and announce the good news!
+     * Figure out who won the game and display the winner.
+     *
+     * This function, is called exclusively, on the Ethereum ledger callback `GameEnd`.
      */
     announceWinner() {
+
+        if (this.announceWinnerIsPossible) {
+            console.log("This time, game came to it's logical conclusion");
+        } else {
+            console.log("Something strange happened with the game");
+        }
 
         let i;
         let highScoreTies = [];
@@ -229,90 +227,59 @@ class Game {
             }
         }
 
-        // Uh oh, there were ties!
-        if (highScoreTies.length > 0 && this.displayTie) {
-            this.displayTie(highScoreTies);
-        }
-
-        // Annnnd, we have a winner!
-        else if (this.displayWinner) {
-            this.displayWinner(highScorePlayer);
+        if (highScoreTies.length > 0) {
+            this.displayWinner({player: highScoreTies, isATie: true});
+        } else {
+            this.displayWinner({player: highScorePlayer, isATie: false});
         }
     }
 
     /**
-     * Public: Starts the game.
+     * Frontend logic, for counting `completed` squares.
      */
-    start(options) {
+    _completeTurn(line) {
 
-        // Required callback that provides the game with information about a player.
-        if (typeof(options.getPlayerData) !== 'function') {
-            throw "getPlayerData must be set and must be a function";
-        }
-
-        if (typeof(options.displayCurrentPlayer) !== 'undefined') {
-            if ('function' === typeof(options.displayCurrentPlayer)) {
-                this._displayCurrentPlayer = options.displayCurrentPlayer;
-            } else {
-                throw "displayCurrentPlayer must be a function";
-            }
-        }
-
-        if (typeof(options.displayWinner) !== 'undefined') {
-            if ('function' === typeof(options.displayWinner)) {
-                this._displayWinner = options.displayWinner;
-            } else {
-                throw "displayWinner must be a function";
-            }
-        }
-
-        if (typeof(options.displayTie) !== 'undefined') {
-            if ('function' === typeof(options.displayTie)) {
-                this._displayTie = options.displayTie;
-            } else {
-                throw "displayTie must be a function";
-            }
-        }
-
-        console.log(this.options.numPlayers);
-
-        this.getPlayers();
-        this.board.init();
-        this.board.draw();
-
-        // Let the first player know that it's their turn.
-        this.notifyPlayer();
-    }
-
-    /**
-     * Public: Called whenever the current player clicks on a line segment.
-     * This completes that player's turn.
-     */
-    completeTurn(line) {
-
-        let score = this.board.claimLine(this.players[this.curPlayer], line);
+        let score = this.claimLine(this.players[this.curPlayerId], line);
 
         if (score > 0) {
 
-            this._totalScore += score;
-            this.players[this.curPlayer].score += score;
-
-            // Check to see if all the squares have been filled in
-            if (this.totalScore === this.options.width * this.options.height) {
-                this.announceWinner();
-                return;
-            }
+            this._occupiedSquares += score;
+            this.players[this.curPlayerId].score += score;
         }
-
-        // move on to the next player if a square wasn't completed
-        else {
-            this.togglePlayer(this.players[this.curPlayer]);
-        }
-
-        // Let the current player know that it's their turn.
-        this.notifyPlayer();
     }
 
+    /**
+     * Public: Claims a line in the name of the specified player and checks
+     * for box completion by said player.
+     */
+    claimLine(player, line) {
+
+        line.claimOwnership(player);
+        return this.checkBoxes(line);
+    }
+
+
+    /**
+     * Notifies the current player that it's their turn.
+     */
+    notifyPlayer() {
+        this.displayCurrentPlayer(this.players[this.curPlayerId]);
+    }
+
+    /**
+     * Creates the array of players for the game.
+     */
+    buildPlayers(playerInfo) {
+
+        for (let i = 0; i < this.options.numPlayers; i++) {
+
+            this.players[i] = playerInfo[i];
+            this.players[i].index = i;
+            this.players[i].score = 0;
+            this.players[i].color = Game.getPlayerColor(this.options.numPlayers, i);
+
+        }
+    }
 
     /**
      * Private: Checks whether or not any boxes were completed. If so, they're
@@ -387,16 +354,96 @@ class Game {
         return score;
     }
 
-    /**
-     * Public: Claims a line in the name of the specified player and checks
-     * for box completion by said player.
-     */
-    claimLine(player, line) {
 
-        line.claimOwnership(player);
-        return this.checkBoxes(line);
+    /* Static methods for this class. */
+
+
+    /**
+     * Shows the player, that is moving right now.
+     *
+     * player - Player object, that represents the person, who currently is making decision.
+     */
+    static displayCurrentPlayer(player) {
+
+        let playerNameDOM = document.getElementById('player-name');
+
+        playerNameDOM.setAttribute('style', 'color: ' + player.color + ';');
+        playerNameDOM.textContent = player.name;
+
+        document.getElementById('current-player-display').setAttribute('style', 'display: block;');
     }
 
+    /**
+     * Shows the winner of the game.
+     *
+     * player - Player object, that represents the winner.
+     * isATie - is true, when there are no winners(In such case player object is discarded).
+     */
+    static displayWinner(player, isATie) {
+
+        /* Hide the player naming label, since no more steps. */
+        document.getElementById('current-player-display').setAttribute('style', 'display: none;');
+
+        let winnerNameDOM = document.getElementById('winner-name');
+
+        if (isATie) {
+            winnerNameDOM.innerHTML = 'Looks like a tie. Play one more?';
+        } else {
+            winnerNameDOM.setAttribute('style', 'color: ' + player.color + ';');
+            winnerNameDOM.textContent = player.name;
+        }
+        document.getElementById('winner-display').setAttribute('style', 'display: block;');
+    }
+
+    /**
+     * This function generates "evenly spaced" colours.
+     * From here: http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript.
+     *
+     * numOfSteps and step - Additional parameters, that bing additional entropy to color creation.
+     */
+    static getPlayerColor(numOfSteps, step) {
+
+        let r, g, b;
+        let h = step / numOfSteps;
+        let i = ~~(h * 6);
+        let f = h * 6 - i;
+        let q = 1 - f;
+
+        switch(i % 6) {
+            case 0: r = 1, g = f, b = 0; break;
+            case 1: r = q, g = 1, b = 0; break;
+            case 2: r = 0, g = 1, b = f; break;
+            case 3: r = 0, g = q, b = 1; break;
+            case 4: r = f, g = 0, b = 1; break;
+            case 5: r = 1, g = 0, b = q; break;
+        }
+
+        return "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) +
+            ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" +
+                (~ ~(b * 255)).toString(16)).slice(-2);
+    }
+
+    /**
+     * Shows nice alert, with some custom text inside.
+     */
+    static showAlert(messageName, messageContents) {
+        Alert.warning(messageName, messageContents, {displayDuration: 0});
+    }
+
+
+    /* Getter functions for this class. */
+
+    get isWaitingForConformation() {
+        return this._isWaitingForConformation;
+    }
+
+    get ourIndex() {
+        return this._us;
+    }
+
+    get ourPlayer() {
+        return this._players[this._us];
+    }
 
     get players() {
         return this._players;
@@ -406,28 +453,24 @@ class Game {
         return this._options;
     }
 
-    get curPlayer() {
+    get curPlayerId() {
         return this._curPlayer;
     }
 
-    get totalScore() {
-        return this._totalScore;
+    get curPlayerObject() {
+        return this._players[this._curPlayer];
     }
 
-    get displayCurrentPlayer() {
-        return this._displayCurrentPlayer;
+    get occupiedSquares() {
+        return this._occupiedSquares;
     }
 
-    get displayWinner() {
-        return this._displayWinner;
-    }
-
-    get displayTie() {
-        return this._displayTie;
-    }
-
-    get board() {
+    get renderer() {
         return this._renderer;
+    }
+
+    get announceWinnerIsPossible() {
+        return this._anounceWinnerIsPossible;
     }
 
 }

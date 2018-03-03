@@ -11,19 +11,19 @@ class Renderer {
      * The default constructor for the Renderer-Board object.
      *
      * game - A reference to the parent Game object.
-     * boardId - HTML ID of the game board's SVG element.
+     * svgId - HTML ID of the game board's SVG element.
      * width -  The number of squares in the horizontal direction.
      * height - The number of squares in the vertical direction.
      */
-    constructor(game, boardId, width, height) {
+    constructor(game, svgId, width, height) {
 
         this._game = game;
-        this._boardId = boardId;
+        this._svgId = svgId;
         this._width = width;
         this._height = height;
 
         /* The element, we are going to use for doing all the drawing. */
-        this._svg = document.getElementById(boardId);
+        this._svg = document.getElementById(svgId);
 
         /*
          * Format the game board parameters.
@@ -309,8 +309,8 @@ class Renderer {
         return this._squares;
     }
 
-    get boardId() {
-        return this._boardId;
+    get svgId() {
+        return this._svgId;
     }
 
     get width() {

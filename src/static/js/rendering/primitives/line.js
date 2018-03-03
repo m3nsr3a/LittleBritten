@@ -53,10 +53,7 @@ class Line extends DrawPrimitive {
         /* Attach the click event. */
         line.addEventListener('click', function (e) {
 
-            // make sure the segment hasn't already been taken before completing the turn
-            if (!that.owner) {
-                that.board.game.completeTurn(that);
-            }
+            that.board.game.completeTurn(that);
         });
 
         this.board.svg.appendChild(line);
