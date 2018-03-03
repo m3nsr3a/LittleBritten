@@ -200,11 +200,18 @@ th {
 tr:nth-child(even) {
     background-color: #dddddd;
 }
+tr:nth-child(2n + 3) {
+    background-color: #c12e2a;
+}
 
 table, th, td {
     border: 1px solid black;
 }
-tr:hover {background-color: #f5f5f5;}
+
+tr:not(:first-child):hover {
+    filter: invert(100%);
+    /*background-color: #f5f5f5;*/
+}
 
 
 .closeGameButton {
@@ -243,3 +250,71 @@ tr:hover {background-color: #f5f5f5;}
     box-shadow: inset 2px -2px 5px #ea5349, inset 24px -24px 40px #e83d32, 0 4px 0 #B81F15, 0 10px 2px rgba(0, 0, 0, 0.6), -2px 10px 50px 0 #460c08;
 }
 
+* {
+    box-sizing: border-box;
+    font-family: 'Exo', sans-serif;
+}
+
+.game {
+    width: 400px;
+    height: 400px;
+    margin: 50px auto;
+    position: relative;
+}
+
+.game-info {
+    position: absolute;
+    top:10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    border-radius: 50%;
+    background-color: #ccd279;
+    padding: 20px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 20;
+}
+
+.game-info h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.game-info span {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.game-strict span {
+    cursor: pointer;
+}
+
+.player-nick-name, .number-of-players {
+    cursor: pointer;
+    width: 50px;
+}
+
+.player-nick-name:hover, .number-of-players:hover {
+    color: white;
+}
+
+footer {
+    text-align: center;
+}
+
+footer p a {
+    text-decoration:none;
+    color: white;
+}
+
+@media (max-width: 400px) {
+    .game {
+        width: 300px;
+        height: 300px;
+    }
+    .game-info h1 {
+        font-size: 20px;
+    }
+}

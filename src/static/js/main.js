@@ -98,7 +98,7 @@ App = {
      * Get info(like ABI) from build contracts using Truffle, to simplify usage.
      */
     initContractsTruffle: function () {
-
+        console.log('Using Truffle contract-wrapper.');
         /* We only need this one?, since it encapsulates all other methods. */
         $.getJSON('build/contracts/StickGame.json', function (data) {
             // Get the necessary contract artifact file and instantiate it with truffle-contract
@@ -118,7 +118,7 @@ App = {
      * Get contract the hard way using Web3 js.
      */
     initContractsWeb3: function () {
-
+        console.log('We are falling back to naked Web3.js');
         $.getJSON('build/contracts/StickGame.json', function (data) {
 
             let networks = data["networks"];
@@ -127,24 +127,27 @@ App = {
             for (let key in networks) {
                 if (networks.hasOwnProperty(key)) {
                     address = networks[key]['address'];
+                    break;
                 }
             }
+
+            App.contractAddress = address;
 
             App.contracts.StickGame = TruffleContract(data);
             App.contracts.StickGame.setProvider(App.web3Provider);
 
             let contractArtifact = App.contracts.StickGame;
             App.contracts.StickGame = web3.eth.contract(contractArtifact.abi);
-            const contractInstance = new Promise(function(resolve, reject) {
-                resolve(App.contracts.StickGame.at(address));
-            });
-            App.contracts.StickGame = { deployed: () => contractInstance};
+            App.contracts.StickGame = App.contracts.StickGame.at(App.contractAddress);
 
             /*
              * As soon as we get the contact, update the table
              *  of open games once, without waiting for timer.
+             *
+             * Same goes for contract info.
              */
             App.getOpenGames();
+            $('#account-select').trigger('click');
 
             return App.bindGameEvents();
 
@@ -173,7 +176,7 @@ App = {
         App.$waitForGameScreen = $('div[data-role="wait-for-game"]');
 
         /* As of jQuery v1.8, such $(document).on( "ready", handler ) support has been deprecated. */
-        $('#address-input').on('click', App.getOpenGames);
+        $('#account-select').on('click', App.getMyAccounts);
         $('#create-game').on('click', App.createNewGame);
         $('#join').on('click', App.joinSomeGame);
         $('.closeGameButton').on('click', App.closeThisGame);
@@ -182,22 +185,22 @@ App = {
          * We update the `Open Games` table each 5 seconds.
          */
         setInterval(App.getOpenGames, 5000)
+
     },
 
     bindGameEvents: function () {
 
-        let meta;
-        App.contracts.StickGame.deployed().then(function (instance) {
-            meta = instance;
+        let meta = App.contracts.StickGame;
 
-            /*
-             * When we get this event, everything we do, is we append
-             *  to list of open games, the id data we received, in case it wasn't there already.
-             */
-            meta.GameInitialized()
-                .watch(
-                    (er, logs) => {
-
+        /*
+         * When we get this event, everything we do, is we append
+         *  to list of open games, the id data we received, in case it wasn't there already.
+         */
+        meta.GameInitialized()
+            .watch(
+                (err, logs) => {
+                    if (!err) {
+                        console.log('We got general game initialized event.');
                         /* If there is no such game handle already, append it to. */
                         if (App.$gameToJoinTable.find(`tr[data-value="${logs.args['gameId']}"]`).length === 0) {
                             App.$gameToJoinTable
@@ -216,11 +219,11 @@ App = {
                                                     .append(
                                                         typeof field === "string" ?
                                                             web3.toAscii(field)
-                                                            :typeof field === "boolean" ?
-                                                                field ?
-                                                                    "First move is ours."
-                                                                    :"Other player goes first."
-                                                                :field.c[0]
+                                                            : typeof field === "boolean" ?
+                                                            field ?
+                                                                "First move is ours."
+                                                                : "Other player goes first."
+                                                            : field.c[0]
                                                     )
                                         )
                                     )
@@ -230,19 +233,31 @@ App = {
                         } else {
                             console.log('Not adding ' + logs.toString());
                         }
-
+                    } else {
+                        console.log("Some error occurred, while processing GameInitialized event.");
+                        console.log(err.toString());
                     }
-                );
+                }
+            );
 
             meta.GameClosed()
                 .watch(
-                    (er, logs) => {
-                        App.$gameToJoinTable.find(`tr[data-value="${logs.args['gameId']}"]`).remove();
+                    (err, logs) => {
+                        if (!err) {
+                            App.$gameToJoinTable.find(`tr[data-value="${logs.args['gameId']}"]`).remove();
 
-                        console.log('Removing from table ' + logs.toString());
+                            console.log('Removing from table ' + logs.toString());
+                        } else {
+                            console.log("Some error occurred, while processing GameClosed event.");
+                            console.log(err.toString());
+                        }
                     }
                 );
 
+            /*
+             * This events, are a little `different`, from previous ones.
+             *  We don't need all of them, so we attach filters on top of them.
+             */
 
             // meta.GameJoined()
             //     .watch(
@@ -274,8 +289,6 @@ App = {
             //
             //         }
             //     );
-        });
-
     },
 
     /**
@@ -299,6 +312,8 @@ App = {
                 .append(
                     listOfAccounts.map(n => `<option value="${n}">${n}</option>`)
                 );
+
+            App.ourAddress = listOfAccounts[0];
         });
     },
 
@@ -311,22 +326,15 @@ App = {
      */
     getOpenGames: function () {
 
-        let meta;
-        App.contracts.StickGame.deployed().then(function (instance) {
-            meta = instance;
+        let meta = App.contracts.StickGame;
+        meta.getOpenGameIds.call(function (error, listOfOpenGames) {
 
-            let asyncGetOpenGameIds;
-
-            if (App.isInjected) {
-                asyncGetOpenGameIds = App.promisify(meta.getOpenGameIds);
-            } else {
-                asyncGetOpenGameIds = meta.getOpenGameIds;
+            if (error) {
+                $(event.target).setContent("Some problem occurred while loading addresses.");
+                console.log(error);
             }
 
-            return asyncGetOpenGameIds.call();
-
-        }).then(function (listOfOpenGames) {
-
+            console.log('Below is list of open games.');
             console.log(listOfOpenGames);
 
             let tableBodyDOM = App.$gameToJoinTable.find('> tbody');
@@ -358,11 +366,6 @@ App = {
                     listOfOpenGames
                 ));
 
-        }).catch(function (err) {
-
-            Alert.warning("Warning", "Some problem occurred while loading open games.");
-            console.log(err.message);
-
         });
     },
 
@@ -380,51 +383,146 @@ App = {
             return;
         }
 
-        let meta;
-        App.contracts.StickGame.deployed().then(function (instance) {
-            meta = instance;
+        let meta = App.contracts.StickGame;
 
-            meta.initGame(App.ourName, App.gameWidth, App.gameHigth, App.numberOfPlayers, (err, currentGameParams) => {
+
+        /*
+         * This looks like a terrible thing. If you call the contract method without .call here,
+         *  you get only one value back.
+         */
+        meta.initGame(App.ourName, App.gameWidth, App.gameHigth, App.numberOfPlayers, (err, currentTransactionHash) => {
+
+            if (err) {
+                Alert.warning("Big error", 'Some internal problem occurred while processing game creating call.');
+                console.log(err.message);
+                return;
+            }
+
+            /*
+             * So after sending the transaction, we begin to wait for event, that game was created.
+             *  We create filter, that starts looking for `GameInitialized` event, which was fired,
+             *  from our address, in transaction block >= that the one, where the initGame function
+             *  was triggered.
+             *
+             * When we fin it, we remove the filter, and change screens.
+             */
+
+            web3.eth.getTransaction(currentTransactionHash, (err, answer) => {
 
                 if (err) {
-                    Alert.warning("Big error", 'Some internal problem occurred while processing game creating call.');
+                    Alert.warning("Internal error", 'Some internal problem occurred while parsing transaction info.');
                     console.log(err.message);
                     return;
                 }
 
-                App.currentGameId = currentGameParams[0];
-                App.weMoveFirst = currentGameParams[1];
+                let filter = meta.GameInitialized(
+                    {address: App.contractAddress, fromBlock: answer.blockNumber, toBlock: 'latest'}
+                );
 
-                /* Update and show waiting screen, until somebody connects to our game. */
+                filter.watch(
+                    (err, log) => {
+                        if (!err) {
+                            if (log.args['player1Address'] === App.ourAddress) {
+                                console.log('Here comes our latest game initialized event -> proceed to waiting screen');
 
-                $('#actual-player-nick-name')
-                    .text(App.ourName);
-                App.$waitForGameScreen
-                    .find('#actual-moving-statement')
-                    .text(App.weMoveFirst? 'First movements is ours, Yay': "We didn't got firs step.");
-                App.$waitForGameScreen
-                    .find('#actual-game-size')
-                    .text(App.gameHigth + ' x ' + App.gameWidth);
-                App.$waitForGameScreen
-                    .find('#actual-number-of-players')
-                    .text(App.numberOfPlayers);
-                App.$waitForGameScreen
-                    .find('#actual-game-id')
-                    .text(App.currentGameId);
+                                App.weMoveFirst = log.args['player1MovesFirst'];
+                                App.currentGameId = log.args['gameId'];
 
-                App.$startScreen.hide();
-                App.$waitForGameScreen.show();
+                                /* Update and show waiting screen, until somebody connects to our game. */
+                                $('#actual-player-nick-name')
+                                    .text('Player name: ' + App.ourName);
+                                App.$waitForGameScreen
+                                    .find('#actual-moving-statement')
+                                    .text(App.weMoveFirst? 'First movements is ours, Yay.': "We didn't got firs step.");
+                                App.$waitForGameScreen
+                                    .find('#actual-game-size')
+                                    .text('Game size is: ' + App.gameHigth + ' x ' + App.gameWidth);
+                                App.$waitForGameScreen
+                                    .find('#actual-number-of-players')
+                                    .text('Game for ' + App.numberOfPlayers + 'people.');
+                                App.$waitForGameScreen
+                                    .find('#actual-game-id')
+                                    .text('This game ID is: ' + App.currentGameId);
+                                App.$waitForGameScreen // #ToDo This will require fix later.
+                                    .find('#actual-number-of-connected-players')
+                                    .text('Current number of connected players is: ' + 1);
 
+                                App.$startScreen.hide();
+                                App.$waitForGameScreen.show();
+                                filter.stopWatching();
+                            }
+                        } else {
+                            Alert.warning("Internal error", 'Error while filtering for GameInitialised event.');
+                            console.log(err.message);
+                        }
+                    }
+                );
             });
+        });
 
-        }).catch(function (err) {
+    },
 
-            Alert.warning("Warning", 'Cannot create new game.');
-            console.log(err.message);
+    /**
+     * If we are on the game screen, and decided to close our game(i.e. if nobody is coming),
+     *  this function is triggered.
+     *
+     * It will remove game, from open games list(on the Ethereum ledger).
+     *  However, we are going to return to main screen, only after we receive
+     *  the closing event, that is connected to our game.
+     *
+     *
+     */
+    closeThisGame: function (event) {
 
+        event.preventDefault();
+
+        let meta = App.contracts.StickGame;
+
+        meta.closeGame(App.currentGameId, function (err, currentTransactionHash) {
+            if (err) {
+                Alert.warning("Warning", "Some problem occurred while closing the game.");
+                console.log(err.message);
+            }
+
+            /* First, we triggered the closing event -> now wait till it will really be closed. */
+            web3.eth.getTransaction(currentTransactionHash, (err, answer) => {
+                if (err) {
+                    Alert.warning("Internal error", 'Some internal problem occurred while parsing transaction info.');
+                    console.log(err.toString());
+                    return;
+                }
+
+                let filter = meta.GameClosed(
+                    {address: App.contractAddress, fromBlock: answer.blockNumber}
+                );
+
+                filter.watch(
+                    (err, log) => {
+                        console.log(log);
+                        console.log('Insede filter');
+                        if (!err) {
+                            console.log('Insede filter1');
+                            console.log(App.ourAddress);
+                            if (log.args['playerAddress'] === App.ourAddress) {
+                                console.log('Here comes our latest game closed event -> proceed to game screen');
+
+                                App.$waitForGameScreen.hide();
+                                App.$startScreen.show();
+                                filter.stopWatching();
+                            }
+                        } else {
+                            Alert.warning("Internal error", 'Error while filtering for GameClosed event.');
+                            console.log(err.message);
+                        }
+                    }
+                )
+            });
         });
     },
 
+    /**
+     *
+     */
     joinSomeGame: function (event) {
         event.preventDefault();
 
@@ -447,32 +545,6 @@ App = {
         }).catch(function (err) {
 
             alert('Cannot join some game.');
-            console.log(err.message);
-
-        });
-    },
-
-    closeThisGame: function (event) {
-
-        event.preventDefault();
-
-        let meta;
-        App.contracts.StickGame.deployed().then(function (instance) {
-            meta = instance;
-
-            let asyncCloseGame;
-
-            if (App.isInjected) {
-                asyncCloseGame = App.promisify(meta.closeGame);
-            } else {
-                asyncCloseGame = meta.closeGame;
-            }
-
-            asyncCloseGame(App.currentGameId);
-
-        }).catch(function (err) {
-
-            Alert.warning("Warning", "Some problem occurred while closing the game.");
             console.log(err.message);
 
         });

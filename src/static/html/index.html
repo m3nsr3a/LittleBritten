@@ -154,8 +154,6 @@
                         </tbody>
                     </table>
 
-                    <div id="join" class="btn">Join</div>
-
                 </div>
 
             </div>
@@ -189,20 +187,27 @@
 
             <div data-role="wait-for-game" style="display: none;">
 
-                <h4 id="actual-player-display">
-                    Current player:
-                    <span id="actual-player-nick-name"></span>
-                    <span id="actual-moving-statement"></span>
-                    <span id="actual-game-size"></span>
-                    <span id="actual-game-id"></span>
-                    <span id="actual-number-of-players"></span>
-                </h4>
+
+                <div id="actual-player-display" class="game">
+                    <div class="game-info">
+                        <div id="actual-player-nick-name" class="player-nick-name"></div>
+                        <div id="actual-moving-statement" class="who-moves-first"><span></span></div>
+                        <h1 id="actual-game-size" class="game-size"></h1>
+                        <div id="actual-game-id" class="game-id"><span> </span></div>
+                        <div id="actual-number-of-players" class="number-of-players"></div>
+                        <div id="actual-number-of-connected-players"></div>
+                    </div>
+                </div>
 
                 <button class="closeGameButton" type="button">
                     CLICK TO CLOSE
                 </button>
 
             </div>
+
+            <footer>
+                <p>Designed and built by <a href="http://github.com/NumenZ/LittleBritten">NumenZ</a>.</p>
+            </footer>
 
         </div>
 
