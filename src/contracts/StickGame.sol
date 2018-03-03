@@ -33,13 +33,18 @@ contract StickGame is TwoPlayerGame {
      * Is triggered, when any user `creates` a new game.
      *
      * bytes32 gameId - The ID of the created game.
-     * address player1 - Address of the player, that created the game.
-     * string player1Alias - NickName of the player that created the game.
+     * bytes32 player1Alias - NickName of the player that created the game.
+     * uint8 boardSizeX - X-axis dimension size of the board.
+     * uint8 boardSizeY - Y-axis dimension size of the board.
+     * uint8 numberOfPlayers - Total number of player needed for the game to run.
      * bool player1MovesFirst - Is going to be true, if player1 is moving first, otherwise false.
      */
     event GameInitialized(
         bytes32 indexed gameId,
-        address indexed player1, string player1Alias,
+        bytes32 player1Alias,
+        uint8 boardSizeX,
+        uint8 boardSizeY,
+        uint8 numberOfPlayers,
         bool player1MovesFirst
     );
 
@@ -62,17 +67,6 @@ contract StickGame is TwoPlayerGame {
     );
 
     /*
-     * Will be send, when state of the game will change.
-     * Well, basically after init, and move.
-     *
-     * Note, that for end of the game, we have special event.
-     *
-     * bytes32 gameId - The ID of the game, whose state have changed.
-     * int8[64] state - The current representation of game state.
-     */
-    event GameStateChanged(bytes32 indexed gameId, int8[64] state);
-
-    /*
      * Triggered, when a movement have been made, by any player.
      *
      * bytes32 gameId - The ID of the created game.
@@ -83,12 +77,11 @@ contract StickGame is TwoPlayerGame {
     event GameMove(bytes32 indexed gameId, address indexed player, uint256 xIndex, uint256 yIndex);
 
     /*
-     * This event is triggered, when the game was closed for joining.
+     * This event is triggered, when the game was manually closed for joining.
      *
      * bytes32 gameId - id of the game, that was closed.
-     * address player - address of the player, that closed the game.
      */
-    event GameClosed(bytes32 indexed gameId, address indexed player);
+    event GameClosed(bytes32 indexed gameId);
 
     /*
      * This event is triggered, when the game had ended.
@@ -119,23 +112,30 @@ contract StickGame is TwoPlayerGame {
 
     /*
      * Create a new game and notify about it.
-     * Will return the unique modifier of the game.
+     * Will return the unique modifier of the game, and true if creator got first step.
      *
      * Generally, anyone can create a new game, so no restrictions on this function.
      *
      * string player1Alias - NickName of the player that creates the game.
+     * uint8 boardSizeX - X-axis dimension size of the board.
+     * uint8 boardSizeY - Y-axis dimension size of the board.
+     * uint8 numberOfPlayers - Total number of player needed for the game to run.
      */
-    function initGame(string player1Alias) public returns (bytes32) {
+    function initGame(
+        string player1Alias, uint8 boardSizeX,
+        uint8 boardSizeY, uint8 numberOfPlayers
+    ) public returns (bytes32, bool) {
 
         /*
          * User, who created a game, is randomly assigned, if he is going to move first or second.
          * Then the game object is created, and stored in memory.
          */
-        bytes32 gameId = _initGame(player1Alias, determineFirstMove());
+        bytes32 gameId = _initGame(player1Alias, boardSizeX, boardSizeY, numberOfPlayers, determineFirstMove());
 
         /* Currently set, the default values. */
-        gameStatesById[gameId].yMapMaxSize = 8;
-        gameStatesById[gameId].xMapMaxSize = 8;
+        gameStatesById[gameId].yMapMaxSize = boardSizeX;
+        gameStatesById[gameId].xMapMaxSize = boardSizeY;
+        gameStatesById[gameId].numberOfPlayers = numberOfPlayers;
 
         /* If player1 moves first, highlight this info in game state. */
         if (gamesById[gameId].nextPlayer != 0) {
@@ -144,10 +144,16 @@ contract StickGame is TwoPlayerGame {
         }
 
         /* Finally, sent notification events. */
-        GameInitialized(gameId, msg.sender, player1Alias, gameStatesById[gameId].isFirstPlayer);
-        GameStateChanged(gameId, gameStatesById[gameId].state);
+        GameInitialized(
+            gameId,
+            stringToBytes32(player1Alias),
+            boardSizeX,
+            boardSizeY,
+            numberOfPlayers,
+            gameStatesById[gameId].isFirstPlayer
+        );
 
-        return gameId;
+        return (gameId, gameStatesById[gameId].isFirstPlayer);
     }
 
     /*
@@ -178,16 +184,14 @@ contract StickGame is TwoPlayerGame {
     }
 
     /*
-     * Close open game. Game either mustn't have second player,
-     *  or be already ended.
+     * Close open game. Game mustn't have second player.
      *
      * bytes32 gameId - ID of the game to join.
-     * string player2Alias - NickName of the player that wants to join the game.
      */
     function closeGame(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) public {
-        super.closeGame(gameId);
+        super._closeGame(gameId);
 
-        GameClosed(gameId, msg.sender);
+        GameClosed(gameId);
     }
 
     /*
@@ -221,7 +225,6 @@ contract StickGame is TwoPlayerGame {
 
         /* If we went up to this point, then all is ok. */
         GameMove(gameId, msg.sender, xIndex, yIndex);
-        GameStateChanged(gameId, gameStatesById[gameId].state);
 
         if (gameStatesById[gameId].occupiedLines == 0) {
             this.finishGame(gameId);

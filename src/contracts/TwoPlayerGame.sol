@@ -29,6 +29,9 @@ contract TwoPlayerGame {
 
     /* Represent one game. */
     struct Game {
+        /* Number of player for the game. (Currently is not supported -> always 2.) */
+        uint8 numberOfPlayers;
+
         /* Addresses of players engaged in current game. */
         address player1;
         address player2;
@@ -36,6 +39,10 @@ contract TwoPlayerGame {
         /* Real-name(NickNames) of players in the game. */
         string player1Alias;
         string player2Alias;
+
+        /* Proportions of the game panel. */
+        uint8 sizeX;
+        uint8 sizeY;
 
         /* The address of the player, who moves next. Initially is set to the first-player. */
         address nextPlayer;
@@ -61,7 +68,7 @@ contract TwoPlayerGame {
 
 
     /*
-     * Core public functions.
+     * Core functions.
      */
 
 
@@ -70,14 +77,33 @@ contract TwoPlayerGame {
      * Can be called, only
      *
      * string player1Alias - NickName of the player that creates the game.
+     * uint8 boardSizeX - X-axis dimension size of the board.
+     * uint8 boardSizeY - Y-axis dimension size of the board.
+     * uint8 numberOfPlayers - Total number of player needed for the game to run.
      * bool isFirst - if true, this player will go first.
      */
-    function _initGame(string player1Alias, bool isFirst) internal returns (bytes32) {
+    function _initGame(
+        string player1Alias, uint8 boardSizeX,
+        uint8 boardSizeY, uint8 numberOfPlayers,
+        bool isFirst
+    ) internal returns (bytes32) {
 
         /* Generate game id based on player's addresses and current block number. */
         bytes32 gameId = keccak256(msg.sender, block.number, now);
 
+        /*
+         * The board, must have at least place for one square.
+         *  Not a lot of meaning behind this rule, yet.
+         */
+        require(boardSizeX >= 2 && boardSizeY >= 2);
+
+        /* The game must have at least two players, for it to be multilayer game. */
+        require(numberOfPlayers >= 2);
+
         gamesById[gameId].isEnded = false;
+        gamesById[gameId].sizeX = boardSizeX;
+        gamesById[gameId].sizeY = boardSizeY;
+        gamesById[gameId].numberOfPlayers = numberOfPlayers;
 
         /* Set info about first player. */
         gamesById[gameId].player1 = msg.sender;
@@ -91,6 +117,25 @@ contract TwoPlayerGame {
         openGamesByIdHead = gameId;
 
         return gameId;
+    }
+
+    /*
+     * Close a game(if it may be closed).
+     *
+     * bytes32 gameId - the id of the closing game.
+     */
+    function _closeGame(bytes32 gameId) internal {
+        /* Get the Game object from global mapping. */
+        Game storage game = gamesById[gameId];
+
+        /* Game was started, however is not yet finished, and second player haven't connected yet. */
+        require(game.player2 == 0 && !game.isEnded);
+
+        /* Game can be closed only by involved players. */
+        require(msg.sender == game.player1);
+
+        /* If game was open -> close it. */
+        removeGameFromOpenGames(gameId);
     }
 
     /*
@@ -173,25 +218,6 @@ contract TwoPlayerGame {
     }
 
     /*
-     * Close a game(if it may be closed).
-     *
-     * bytes32 gameId - the id of the closing game.
-     */
-    function closeGame(bytes32 gameId) public {
-        /* Get the Game object from global mapping. */
-        Game storage game = gamesById[gameId];
-
-        /* game already started and not finished yet. */
-        require(game.player2 != 0 && !game.isEnded);
-
-        /* Game can be closed only be involved players. */
-        require(msg.sender != game.player1 && msg.sender != game.player2);
-
-        /* If game was open -> close it. */
-        removeGameFromOpenGames(gameId);
-    }
-
-    /*
      * Preform move in the game and notify everyone.
      * After any move, the game may be won,
      *
@@ -237,6 +263,22 @@ contract TwoPlayerGame {
         }
     }
 
+    /*
+     * This is really unsafe hack, that preforms conversion of string to bytes32.
+     *
+     * For simplicity purpose, just don't use long strings please with something non ASCII-symbols.
+     */
+    function stringToBytes32(string memory source) internal pure returns (bytes32 result) {
+        bytes memory tempEmptyStringTest = bytes(source);
+        if (tempEmptyStringTest.length == 0) {
+            return 0x0;
+        }
+
+        assembly {
+            result := mload(add(source, 32))
+        }
+    }
+
 
     /*
      * Public helper functions.
@@ -246,7 +288,7 @@ contract TwoPlayerGame {
     /*
      * Using small hack, return list of all currently open games.
      */
-    function getOpenGameIds() public constant returns (bytes32[]) {
+    function getOpenGameIds() public view returns (bytes32[], bytes32[], uint8[], uint8[], uint8[], bool[]) {
 
         /* Count total number of different open games. */
         uint256 counter = 0;
@@ -258,14 +300,25 @@ contract TwoPlayerGame {
          * Create RAM array of gameIds.
          * Then unroll, the LL, storing information in the created array.
          */
-        bytes32[] memory data = new bytes32[](counter);
-        var currentGame = openGamesByIdHead;
+        bytes32[] memory gameIds = new bytes32[](counter);
+        uint8[] memory gameSizesX = new uint8[](counter);
+        uint8[] memory gameSizesY = new uint8[](counter);
+        bytes32[] memory gamePlayerNames = new bytes32[](counter);
+        uint8[] memory gameNumberOfPlayers = new uint8[](counter);
+        bool[] memory gameWeMoveFirst = new bool[](counter);
+
+        var currentGameId = openGamesByIdHead;
         for (uint256 i = 0; i < counter; i++) {
-            data[i] = currentGame;
-            currentGame = openGamesById[currentGame];
+            gameIds[i] = currentGameId;
+            gameSizesX[i] = gamesById[currentGameId].sizeX;
+            gameSizesY[i] = gamesById[currentGameId].sizeY;
+            gamePlayerNames[i] = stringToBytes32(gamesById[currentGameId].player1Alias);
+            gameNumberOfPlayers[i] = gamesById[currentGameId].numberOfPlayers;
+            gameWeMoveFirst[i] = gamesById[currentGameId].nextPlayer == 0? true: false;
+            currentGameId = openGamesById[currentGameId];
         }
 
-        return data;
+        return (gameIds, gamePlayerNames, gameSizesX, gameSizesY, gameNumberOfPlayers, gameWeMoveFirst);
     }
 
     /*
@@ -276,4 +329,5 @@ contract TwoPlayerGame {
     function isGameEnded(bytes32 gameId) public constant returns (bool) {
         return gamesById[gameId].isEnded;
     }
+
 }

@@ -38,6 +38,7 @@ library Rules {
 
 
     struct State {
+        uint8 numberOfPlayers;
         uint8 xMapMaxSize;
         uint8 yMapMaxSize;
         mapping(uint256 => mapping(uint256 => Field)) fast_fields;
