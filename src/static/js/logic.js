@@ -16,6 +16,7 @@ class GameLogic {
      * options.height - Number of squares in the vertical direction.
      * options.numPlayers - Number of players in the game.
      * options.svgId - Unique name of the HTML element, that will hold the graphics.
+     * options.application - The reference to Application object.
      */
     constructor(options) {
 
@@ -93,7 +94,7 @@ class GameLogic {
      *
      * This function, is called exclusively, on the Ethereum ledger callback `GameEnd`.
      */
-    announceWinner(winnerName) {
+    announceWinner(winnerName, isATie) {
 
         /*
          * It's either somebody surrendered, or the game really ended.
@@ -136,6 +137,8 @@ class GameLogic {
             console.log(winnerName);
             console.log(highScoreTies);
             console.log(highScorePlayer);
+            console.log("Check if it' a tie");
+            console.log(isATie);
             if (highScoreTies.length > 0) {
                 GameLogic.displayWinner({player: highScoreTies, isATie: true});
             } else {
@@ -190,18 +193,20 @@ class GameLogic {
          */
 
         this.possilbeClaim = lineObject;
-        console.log(lineObject);
-        // ToDo: call to eth.
+        this.options.application.makeSomeMove(
+            lineObject.vertex1.x, lineObject.vertex1.y,
+            lineObject.vertex2.x, lineObject.vertex2.y,
+        );
 
         /*
          * Since it takes time, we are going to wait.
          * We wont draw anything yet, just show, that we are waiting for something.
          */
 
-        // this._isWaitingForConformation = true;
+        this._isWaitingForConformation = true;
 
-        // this.options.application.$gameScreen.hide();
-        // this.options.application.$waitScreen.show();
+        this.options.application.$gameScreen.hide();
+        this.options.application.$waitScreen.show();
     }
 
     /**
@@ -212,51 +217,182 @@ class GameLogic {
      *  - If it was somebody else move -> draw it straightaway(since smart-contracts don't lie).
      *  - It it was our move -> continue, where we left.
      */
-    drawLine(xCoordinate, yCoordinate, moveOwner) {
+    drawLine(vertex1, vertex2, moveOwner, hadScored) {
 
         /* Get the line, we are trying to draw by the coordinate. */
-        let line = this.renderer.getLine(xCoordinate, yCoordinate);
+        let line = this.renderer.getLine(vertex1, vertex2);
 
-        if (this.curPlayerObject.internalId === moveOwner) {
+        if (!line.owner) {
 
-            this._completeTurn(line);
-
-            /* And, since the other player made the move, we can make ours. */
-
-            this.options.application.$waitScreen.hide();
-            this.options.application.$gameScreen.show();
-
-        } else {
             /*
-             * That means, we are drawing our previous move.
-             *
-             * However, just check one more time, that it's indeed `that` move.
+             * At this point we can have 3 situations:
+             *      1) We either tried to claim the line before and are waiting for drawing
+             *          event to confirm our claim.
+             *      2) We receive other player drawing event.
+             *      3) We receive other player drawing event, when we haven got our drawing event yet.
              */
 
-            if (this.possilbeClaim === line) {
+            if (this.possilbeClaim != null) {
+                /* 1 and 3 goes here. */
 
+                if (this.curPlayerObject.name === moveOwner) {
+                    /*
+                     * That means, we are drawing our previous move.
+                     *
+                     * However, just check one more time, that it's indeed `that` move.
+                     */
+                    if (this.possilbeClaim === line) {
 
-                this.possilbeClaim = null;
-                this._isWaitingForConformation = false;
+                        /* If it's indeed that one, clear helper vars and complete the drawing. */
+                        this.possilbeClaim = null;
+                        this._isWaitingForConformation = false;
 
-                this._completeTurn(line);
+                        console.log("1'st case");
 
+                    } else {
+                        console.log('Looks like something strange had happened.');
+                        console.log('Line ' + vertex1.toString() + '-' + vertex2.toString());
+                        return;
+                    }
+                } else {
+                    /* That means it's number 3. */
+
+                    console.log("3'rd case - bad situation.");
+                }
             } else {
-                console.log('Looks like we got some drawing event from the past.');
-                return;
+                /* 2 goes here -> just draw the line. */
+
+                console.log("2'nd case.");
             }
+
+            this._completeTurn(line, moveOwner, hadScored);
+
+        } else {
+            console.log('Looks like we got drawing event from the past, since this line is already owned.');
+            console.log('Line ' + vertex1.toString() + '-' + vertex2.toString() + ' is already claimed');
+        }
+    }
+
+    /**
+     * Frontend logic, for counting `completed` squares.
+     */
+    _completeTurn(line, moveOwner, hadScored) {
+
+        /*
+         * Claims a line in the name of the specified player and checks
+         * for box completion by said player.
+         */
+
+        if (this.players[this.curPlayerId].name === moveOwner) {
+            line.claimOwnership(this.players[this.curPlayerId]);
+        } else {
+            console.log('Looks like 3rd case to me');
         }
 
-        this.togglePlayer();
+        let score = this.checkBoxes(line);
 
-        // Let the current player know that it's their turn.
+        if (score > 0) {
+
+            this._occupiedSquares += score;
+            this.players[this.curPlayerId].score += score;
+        } else {
+            this.togglePlayer();
+        }
+
+        /*
+         * The drawing is complete now for some player ->
+         *      - Update the player status.
+         *      - Update the GUIs.
+         *      - Check, that the game had really ended.
+         */
+
         this.notifyPlayer();
 
-        /* Finally, we check, that the game is already complete. */
+        this.options.application.$waitScreen.hide();
+        this.options.application.$gameScreen.show();
+
         if (this.occupiedSquares === this.options.width * this.options.height) {
             this._anounceWinnerIsPossible = true;
         }
+
     }
+
+    /**
+     * Private: Checks whether or not any boxes were completed. If so, they're
+     * marked as completed by the specified player. Returns number of newly
+     * completed squares.
+     */
+    checkBoxes(line) {
+
+        let lineX1 = line.vertex1.x;
+        let lineY1 = line.vertex1.y;
+        let lineX2 = line.vertex2.x;
+        let lineY2 = line.vertex2.y;
+
+        let score = 0;
+
+        // check squares on the top and bottom of the line
+        if ('horizontal' === line.getType) {
+
+            // top square
+            let topTop = this.renderer.getLine([lineX1, lineY1 - 1], [lineX2, lineY2 - 1]);
+            let topLeft = this.renderer.getLine([lineX1, lineY1 - 1], [lineX1, lineY1]);
+            let topRight = this.renderer.getLine([lineX2, lineY2 - 1], [lineX2, lineY2]);
+
+            if (topTop && topTop.isOwned &&
+                topLeft && topLeft.isOwned &&
+                topRight && topRight.isOwned) {
+                this.renderer.squares[topLeft.vertex1.y][topLeft.vertex1.x].claimOwnership(line.owner);
+                score++;
+            }
+
+            // bottom square
+            let bottomBottom = this.renderer.getLine([lineX1, lineY1 + 1], [lineX2, lineY2 + 1]);
+            let bottomLeft = this.renderer.getLine([lineX1, lineY1], [lineX1, lineY1 + 1]);
+            let bottomRight = this.renderer.getLine([lineX2, lineY2], [lineX2, lineY2 + 1]);
+
+            if (bottomBottom && bottomBottom.isOwned &&
+                bottomLeft && bottomLeft.isOwned &&
+                bottomRight && bottomRight.isOwned) {
+                this.renderer.squares[line.vertex1.y][line.vertex1.x].claimOwnership(line.owner);
+                score++;
+            }
+        }
+
+        // check squares to the left and right of the line
+        else {
+
+            // left square
+            let leftLeft = this.renderer.getLine([lineX1 - 1, lineY1], [lineX2 - 1, lineY2]);
+            let leftTop = this.renderer.getLine([lineX1 - 1, lineY1], [lineX1, lineY1]);
+            let leftBottom = this.renderer.getLine([lineX2 - 1, lineY2], [lineX2, lineY2]);
+
+            if (leftLeft && leftLeft.isOwned &&
+                leftTop && leftTop.isOwned &&
+                leftBottom && leftBottom.isOwned) {
+                this.renderer.squares[leftTop.vertex1.y][leftTop.vertex1.x].claimOwnership(line.owner);
+                score++;
+            }
+
+            // right square
+            let rightRight = this.renderer.getLine([lineX1 + 1, lineY1], [lineX2 + 1, lineY2]);
+            let rightTop = this.renderer.getLine([lineX1, lineY1], [lineX1 + 1, lineY1]);
+            let rightBottom = this.renderer.getLine([lineX2, lineY2], [lineX2 + 1, lineY2]);
+
+            if (rightRight && rightRight.isOwned &&
+                rightTop && rightTop.isOwned &&
+                rightBottom && rightBottom.isOwned) {
+                this.renderer.squares[line.vertex1.y][line.vertex1.x].claimOwnership(line.owner);
+                score++;
+            }
+        }
+
+        return score;
+    }
+
+
+    /* Helper methods for the class. */
+
 
     /**
      * Change the player.
@@ -266,31 +402,6 @@ class GameLogic {
         this._curPlayer++;
         this._curPlayer %= this.options.numPlayers;
     }
-
-    /**
-     * Frontend logic, for counting `completed` squares.
-     */
-    _completeTurn(line) {
-
-        let score = this.claimLine(this.players[this.curPlayerId], line);
-
-        if (score > 0) {
-
-            this._occupiedSquares += score;
-            this.players[this.curPlayerId].score += score;
-        }
-    }
-
-    /**
-     * Public: Claims a line in the name of the specified player and checks
-     * for box completion by said player.
-     */
-    claimLine(player, line) {
-
-        line.claimOwnership(player);
-        return this.checkBoxes(line);
-    }
-
 
     /**
      * Notifies the current player that it's their turn.
@@ -312,79 +423,6 @@ class GameLogic {
             this.players[i].color = GameLogic.getPlayerColor(this.options.numPlayers, i);
 
         }
-    }
-
-    /**
-     * Private: Checks whether or not any boxes were completed. If so, they're
-     * marked as completed by the specified player. Returns number of newly
-     * completed squares.
-     */
-    checkBoxes(line) {
-
-        let lineX1 = line.vertex1.x;
-        let lineY1 = line.vertex1.y;
-        let lineX2 = line.vertex2.x;
-        let lineY2 = line.vertex2.y;
-
-        let score = 0;
-
-        // check squares on the top and bottom of the line
-        if ('horizontal' === line.getType) {
-
-            // top square
-            let topTop = this.getLine([lineX1, lineY1 - 1], [lineX2, lineY2 - 1]);
-            let topLeft = this.getLine([lineX1, lineY1 - 1], [lineX1, lineY1]);
-            let topRight = this.getLine([lineX2, lineY2 - 1], [lineX2, lineY2]);
-
-            if (topTop && topTop.isOwned &&
-                topLeft && topLeft.isOwned &&
-                topRight && topRight.isOwned) {
-                this.squares[topLeft.vertex1.y][topLeft.vertex1.x].claimOwnership(line.owner);
-                score++;
-            }
-
-            // bottom square
-            let bottomBottom = this.getLine([lineX1, lineY1 + 1], [lineX2, lineY2 + 1]);
-            let bottomLeft = this.getLine([lineX1, lineY1], [lineX1, lineY1 + 1]);
-            let bottomRight = this.getLine([lineX2, lineY2], [lineX2, lineY2 + 1]);
-
-            if (bottomBottom && bottomBottom.isOwned &&
-                bottomLeft && bottomLeft.isOwned &&
-                bottomRight && bottomRight.isOwned) {
-                this.squares[line.vertex1.y][line.vertex1.x].claimOwnership(line.owner);
-                score++;
-            }
-        }
-
-        // check squares to the left and right of the line
-        else {
-
-            // left square
-            let leftLeft = this.getLine([lineX1 - 1, lineY1], [lineX2 - 1, lineY2]);
-            let leftTop = this.getLine([lineX1 - 1, lineY1], [lineX1, lineY1]);
-            let leftBottom = this.getLine([lineX2 - 1, lineY2], [lineX2, lineY2]);
-
-            if (leftLeft && leftLeft.isOwned &&
-                leftTop && leftTop.isOwned &&
-                leftBottom && leftBottom.isOwned) {
-                this.squares[leftTop.vertex1.y][leftTop.vertex1.x].claimOwnership(line.owner);
-                score++;
-            }
-
-            // right square
-            let rightRight = this.getLine([lineX1 + 1, lineY1], [lineX2 + 1, lineY2]);
-            let rightTop = this.getLine([lineX1, lineY1], [lineX1 + 1, lineY1]);
-            let rightBottom = this.getLine([lineX2, lineY2], [lineX2 + 1, lineY2]);
-
-            if (rightRight && rightRight.isOwned &&
-                rightTop && rightTop.isOwned &&
-                rightBottom && rightBottom.isOwned) {
-                this.squares[line.vertex1.y][line.vertex1.x].claimOwnership(line.owner);
-                score++;
-            }
-        }
-
-        return score;
     }
 
 
@@ -465,6 +503,10 @@ class GameLogic {
         document.getElementById('back-to-menu').setAttribute('style', 'display: block;');
     }
 
+    /**
+     * Restores DOM, to state, where it was, before the game had started.
+     *  Will be called, when we return from game to menu.
+     */
     static restoreOriginalGameDOM() {
         document.getElementById('current-player-display').setAttribute('style', 'display: block;');
         document.getElementById('surrender-game').setAttribute('style', 'display: block;');
@@ -512,6 +554,7 @@ class GameLogic {
 
 
     /* Getter functions for this class. */
+
 
     get isWaitingForConformation() {
         return this._isWaitingForConformation;

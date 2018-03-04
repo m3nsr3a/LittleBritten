@@ -237,8 +237,8 @@ contract TwoPlayerGame {
      *
      * bytes32 gameId - Id of a game, in where last move have been made.
      * int8 winChoice - Represents winner
-     *                  1 if player1 won,
-     *                  2 if player2 won,
+     *                 -1 if player1 won,
+     *                  1 if player2 won,
      *                  0 if is a tie.
      */
     function _finishGame(bytes32 gameId, int8 winChoice) internal {
@@ -251,7 +251,7 @@ contract TwoPlayerGame {
             /* player1 won. */
             game.winner = game.player1;
             game.winnerName = game.player1Alias;
-        } else if (winChoice == 1) {
+        } else if (winChoice == -1) {
             /* player2 won. */
             game.winner = game.player2;
             game.winnerName = game.player2Alias;

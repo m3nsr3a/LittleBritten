@@ -69,18 +69,19 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game, where move is preformed.
      * address player - Address of the player, that made move.
-     * bytes32 player2Alias - NickName of the player, who made move.
-     * uint256 xIndex1 - the x coordinate of first vertex on the game grid.
-     * uint256 yIndex1 - the y coordinate of first vertex on the game grid.
-     * uint256 xIndex2 - the x coordinate of second vertex on the game grid.
-     * uint256 yIndex2 - the y coordinate of second vertex on the game grid.
+     * bytes32 playerAlias - NickName of the player, who made move.
+     * uint8 xIndex1 - the x coordinate of first vertex on the game grid.
+     * uint8 yIndex1 - the y coordinate of first vertex on the game grid.
+     * uint8 xIndex2 - the x coordinate of second vertex on the game grid.
+     * uint8 yIndex2 - the y coordinate of second vertex on the game grid.
      * bool continueMovement - true, if the player had scored on this move.
      */
     event GameMove(
         bytes32 indexed gameId,
         address indexed player,
-        uint256 xIndex1, uint256 yIndex1,
-        uint256 xIndex2, uint256 yIndex2,
+        bytes32 playerAlias,
+        uint8 xIndex1, uint8 yIndex1,
+        uint8 xIndex2, uint8 yIndex2,
         bool continueMovement
     );
 
@@ -232,15 +233,15 @@ contract StickGame is TwoPlayerGame {
      *  `GameEnded` event.
      *
      * bytes32 gameId - ID of the game, where move is preformed.
-     * uint256 xIndex1 - the x coordinate of first vertex on the game grid.
-     * uint256 yIndex1 - the y coordinate of first vertex on the game grid.
-     * uint256 xIndex2 - the x coordinate of second vertex on the game grid.
-     * uint256 yIndex2 - the y coordinate of second vertex on the game grid.
+     * uint8 xIndex1 - the x coordinate of first vertex on the game grid.
+     * uint8 yIndex1 - the y coordinate of first vertex on the game grid.
+     * uint8 xIndex2 - the x coordinate of second vertex on the game grid.
+     * uint8 yIndex2 - the y coordinate of second vertex on the game grid.
      */
     function makeMove(
         bytes32 gameId,
-        uint256 xIndex1, uint256 yIndex1,
-        uint256 xIndex2, uint256 yIndex2
+        uint8 xIndex1, uint8 yIndex1,
+        uint8 xIndex2, uint8 yIndex2
     ) notEnded(gameId) onlyPlayers(gameId) isClosed(gameId) public {
         Game memory game = gamesById[gameId];
 
@@ -312,11 +313,32 @@ contract StickGame is TwoPlayerGame {
      * This helper function returns, the name and address, of
      *  of the player, who will move first;
      *
-     * bytes32 gameId - ID of the game, .
+     * bytes32 gameId - ID of the game, to get first player info.
      */
-    function getFirstPlayer(bytes32 gameId) public view returns (address, bytes32) {
-        (a, b) = gameStatesById[gameId].getFirstPlayer();
-        return (a, stringToBytes32(b));
+    function getFirstPlayerInfo(bytes32 gameId) public pure returns (address, bytes32) {
+        Game memory game = gamesById[gameId];
+
+        if (game.gameStatesById[gameId].firstPlayer == game.player1) {
+            return (game.player1, stringToBytes32(game.player1Alias));
+        } else {
+            return (game.player2, stringToBytes32(game.player2Alias));
+        }
+    }
+
+    /*
+     * This helper function returns, the name and address, of
+     *  of the player, who will move second;
+     *
+     * bytes32 gameId - ID of the game, to get second player info.
+     */
+    function getSecondPlayerInfo(bytes32 gameId) public pure returns (address, bytes32) {
+        Game memory game = gamesById[gameId];
+
+        if (game.gameStatesById[gameId].firstPlayer == game.player1) {
+            return (game.player2, stringToBytes32(game.player2Alias));
+        } else {
+            return (game.player1, stringToBytes32(game.player1Alias));
+        }
     }
 
 
@@ -324,15 +346,15 @@ contract StickGame is TwoPlayerGame {
      * Will return true, if there is line by specified coordinates.
      *
      * bytes32 gameId - ID of the game, where we check the state.
-     * uint256 xIndex1 - the x coordinate of first vertex on the game grid.
-     * uint256 yIndex1 - the y coordinate of first vertex on the game grid.
-     * uint256 xIndex2 - the x coordinate of second vertex on the game grid.
-     * uint256 yIndex2 - the y coordinate of second vertex on the game grid.
+     * uint8 xIndex1 - the x coordinate of first vertex on the game grid.
+     * uint8 yIndex1 - the y coordinate of first vertex on the game grid.
+     * uint8 xIndex2 - the x coordinate of second vertex on the game grid.
+     * uint8 yIndex2 - the y coordinate of second vertex on the game grid.
      */
     function getStateByIndex(
         bytes32 gameId,
-        uint256 xIndex1, uint256 yIndex1,
-        uint256 xIndex2, uint256 yIndex2
+        uint8 xIndex1, uint8 yIndex1,
+        uint8 xIndex2, uint8 yIndex2
     ) public view returns (bool) {
         return gameStatesById[gameId].getStateByIndex(xIndex1, yIndex1, xIndex2, yIndex2);
     }
@@ -343,7 +365,7 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - ID of the game, to get number of left moves.
      */
     function getNumberOfLeftMoves(bytes32 gameId) public view returns (uint) {
-        return 64 - gameStatesById[gameId].getNumberOfMoves();
+        return 144 - gameStatesById[gameId].getNumberOfMoves();
     }
 
 

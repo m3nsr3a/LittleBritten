@@ -1,0 +1,844 @@
+@import url(https://fonts.googleapis.com/css?family=Sacramento|Montserrat:700);
+body {
+    background: #ebebeb;
+}
+
+.coffee {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+.coffee:before {
+    content: "rome";
+    font-family: Montserrat;
+    font-weight: 700;
+    font-size: 6em;
+    background: #49311c;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-animation: drinking 20s infinite;
+    animation: drinking 20s infinite;
+}
+.coffee:after {
+    content: "Loading.";
+    font-family: Sacramento;
+    font-size: 3em;
+    display: block;
+    text-align: center;
+}
+
+@-webkit-keyframes drinking {
+    0% {
+        background: -webkit-gradient(linear, left top, left bottom, from(white), color-stop(0%, #49311c));
+        background: linear-gradient(white 0%, #49311c 0%);
+    }
+    1% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(1%, white), color-stop(1%, #49311c));
+        background: linear-gradient(white 1%, #49311c 1%);
+    }
+    2% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(2%, white), color-stop(2%, #49311c));
+        background: linear-gradient(white 2%, #49311c 2%);
+    }
+    3% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(3%, white), color-stop(3%, #49311c));
+        background: linear-gradient(white 3%, #49311c 3%);
+    }
+    4% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(4%, white), color-stop(4%, #49311c));
+        background: linear-gradient(white 4%, #49311c 4%);
+    }
+    5% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(5%, white), color-stop(5%, #49311c));
+        background: linear-gradient(white 5%, #49311c 5%);
+    }
+    6% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(6%, white), color-stop(6%, #49311c));
+        background: linear-gradient(white 6%, #49311c 6%);
+    }
+    7% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(7%, white), color-stop(7%, #49311c));
+        background: linear-gradient(white 7%, #49311c 7%);
+    }
+    8% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(8%, white), color-stop(8%, #49311c));
+        background: linear-gradient(white 8%, #49311c 8%);
+    }
+    9% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(9%, white), color-stop(9%, #49311c));
+        background: linear-gradient(white 9%, #49311c 9%);
+    }
+    10% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(10%, white), color-stop(10%, #49311c));
+        background: linear-gradient(white 10%, #49311c 10%);
+    }
+    11% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(11%, white), color-stop(11%, #49311c));
+        background: linear-gradient(white 11%, #49311c 11%);
+    }
+    12% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(12%, white), color-stop(12%, #49311c));
+        background: linear-gradient(white 12%, #49311c 12%);
+    }
+    13% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(13%, white), color-stop(13%, #49311c));
+        background: linear-gradient(white 13%, #49311c 13%);
+    }
+    14% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(14%, white), color-stop(14%, #49311c));
+        background: linear-gradient(white 14%, #49311c 14%);
+    }
+    15% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(15%, white), color-stop(15%, #49311c));
+        background: linear-gradient(white 15%, #49311c 15%);
+    }
+    16% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(16%, white), color-stop(16%, #49311c));
+        background: linear-gradient(white 16%, #49311c 16%);
+    }
+    17% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(17%, white), color-stop(17%, #49311c));
+        background: linear-gradient(white 17%, #49311c 17%);
+    }
+    18% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(18%, white), color-stop(18%, #49311c));
+        background: linear-gradient(white 18%, #49311c 18%);
+    }
+    19% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(19%, white), color-stop(19%, #49311c));
+        background: linear-gradient(white 19%, #49311c 19%);
+    }
+    20% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(20%, white), color-stop(20%, #49311c));
+        background: linear-gradient(white 20%, #49311c 20%);
+    }
+    21% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(21%, white), color-stop(21%, #49311c));
+        background: linear-gradient(white 21%, #49311c 21%);
+    }
+    22% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(22%, white), color-stop(22%, #49311c));
+        background: linear-gradient(white 22%, #49311c 22%);
+    }
+    23% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(23%, white), color-stop(23%, #49311c));
+        background: linear-gradient(white 23%, #49311c 23%);
+    }
+    24% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(24%, white), color-stop(24%, #49311c));
+        background: linear-gradient(white 24%, #49311c 24%);
+    }
+    25% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(25%, white), color-stop(25%, #49311c));
+        background: linear-gradient(white 25%, #49311c 25%);
+    }
+    26% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(26%, white), color-stop(26%, #49311c));
+        background: linear-gradient(white 26%, #49311c 26%);
+    }
+    27% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(27%, white), color-stop(27%, #49311c));
+        background: linear-gradient(white 27%, #49311c 27%);
+    }
+    28% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(28%, white), color-stop(28%, #49311c));
+        background: linear-gradient(white 28%, #49311c 28%);
+    }
+    29% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(29%, white), color-stop(29%, #49311c));
+        background: linear-gradient(white 29%, #49311c 29%);
+    }
+    30% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(30%, white), color-stop(30%, #49311c));
+        background: linear-gradient(white 30%, #49311c 30%);
+    }
+    31% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(31%, white), color-stop(31%, #49311c));
+        background: linear-gradient(white 31%, #49311c 31%);
+    }
+    32% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(32%, white), color-stop(32%, #49311c));
+        background: linear-gradient(white 32%, #49311c 32%);
+    }
+    33% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(33%, white), color-stop(33%, #49311c));
+        background: linear-gradient(white 33%, #49311c 33%);
+    }
+    34% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(34%, white), color-stop(34%, #49311c));
+        background: linear-gradient(white 34%, #49311c 34%);
+    }
+    35% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(35%, white), color-stop(35%, #49311c));
+        background: linear-gradient(white 35%, #49311c 35%);
+    }
+    36% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(36%, white), color-stop(36%, #49311c));
+        background: linear-gradient(white 36%, #49311c 36%);
+    }
+    37% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(37%, white), color-stop(37%, #49311c));
+        background: linear-gradient(white 37%, #49311c 37%);
+    }
+    38% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(38%, white), color-stop(38%, #49311c));
+        background: linear-gradient(white 38%, #49311c 38%);
+    }
+    39% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(39%, white), color-stop(39%, #49311c));
+        background: linear-gradient(white 39%, #49311c 39%);
+    }
+    40% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(40%, white), color-stop(40%, #49311c));
+        background: linear-gradient(white 40%, #49311c 40%);
+    }
+    41% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(41%, white), color-stop(41%, #49311c));
+        background: linear-gradient(white 41%, #49311c 41%);
+    }
+    42% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(42%, white), color-stop(42%, #49311c));
+        background: linear-gradient(white 42%, #49311c 42%);
+    }
+    43% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(43%, white), color-stop(43%, #49311c));
+        background: linear-gradient(white 43%, #49311c 43%);
+    }
+    44% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(44%, white), color-stop(44%, #49311c));
+        background: linear-gradient(white 44%, #49311c 44%);
+    }
+    45% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(45%, white), color-stop(45%, #49311c));
+        background: linear-gradient(white 45%, #49311c 45%);
+    }
+    46% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(46%, white), color-stop(46%, #49311c));
+        background: linear-gradient(white 46%, #49311c 46%);
+    }
+    47% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(47%, white), color-stop(47%, #49311c));
+        background: linear-gradient(white 47%, #49311c 47%);
+    }
+    48% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(48%, white), color-stop(48%, #49311c));
+        background: linear-gradient(white 48%, #49311c 48%);
+    }
+    49% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(49%, white), color-stop(49%, #49311c));
+        background: linear-gradient(white 49%, #49311c 49%);
+    }
+    50% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(50%, white), color-stop(50%, #49311c));
+        background: linear-gradient(white 50%, #49311c 50%);
+    }
+    51% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(51%, white), color-stop(51%, #49311c));
+        background: linear-gradient(white 51%, #49311c 51%);
+    }
+    52% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(52%, white), color-stop(52%, #49311c));
+        background: linear-gradient(white 52%, #49311c 52%);
+    }
+    53% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(53%, white), color-stop(53%, #49311c));
+        background: linear-gradient(white 53%, #49311c 53%);
+    }
+    54% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(54%, white), color-stop(54%, #49311c));
+        background: linear-gradient(white 54%, #49311c 54%);
+    }
+    55% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(55%, white), color-stop(55%, #49311c));
+        background: linear-gradient(white 55%, #49311c 55%);
+    }
+    56% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(56%, white), color-stop(56%, #49311c));
+        background: linear-gradient(white 56%, #49311c 56%);
+    }
+    57% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(57%, white), color-stop(57%, #49311c));
+        background: linear-gradient(white 57%, #49311c 57%);
+    }
+    58% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(58%, white), color-stop(58%, #49311c));
+        background: linear-gradient(white 58%, #49311c 58%);
+    }
+    59% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(59%, white), color-stop(59%, #49311c));
+        background: linear-gradient(white 59%, #49311c 59%);
+    }
+    60% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(60%, white), color-stop(60%, #49311c));
+        background: linear-gradient(white 60%, #49311c 60%);
+    }
+    61% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(61%, white), color-stop(61%, #49311c));
+        background: linear-gradient(white 61%, #49311c 61%);
+    }
+    62% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(62%, white), color-stop(62%, #49311c));
+        background: linear-gradient(white 62%, #49311c 62%);
+    }
+    63% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(63%, white), color-stop(63%, #49311c));
+        background: linear-gradient(white 63%, #49311c 63%);
+    }
+    64% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(64%, white), color-stop(64%, #49311c));
+        background: linear-gradient(white 64%, #49311c 64%);
+    }
+    65% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(65%, white), color-stop(65%, #49311c));
+        background: linear-gradient(white 65%, #49311c 65%);
+    }
+    66% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(66%, white), color-stop(66%, #49311c));
+        background: linear-gradient(white 66%, #49311c 66%);
+    }
+    67% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(67%, white), color-stop(67%, #49311c));
+        background: linear-gradient(white 67%, #49311c 67%);
+    }
+    68% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(68%, white), color-stop(68%, #49311c));
+        background: linear-gradient(white 68%, #49311c 68%);
+    }
+    69% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(69%, white), color-stop(69%, #49311c));
+        background: linear-gradient(white 69%, #49311c 69%);
+    }
+    70% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(70%, white), color-stop(70%, #49311c));
+        background: linear-gradient(white 70%, #49311c 70%);
+    }
+    71% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(71%, white), color-stop(71%, #49311c));
+        background: linear-gradient(white 71%, #49311c 71%);
+    }
+    72% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(72%, white), color-stop(72%, #49311c));
+        background: linear-gradient(white 72%, #49311c 72%);
+    }
+    73% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(73%, white), color-stop(73%, #49311c));
+        background: linear-gradient(white 73%, #49311c 73%);
+    }
+    74% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(74%, white), color-stop(74%, #49311c));
+        background: linear-gradient(white 74%, #49311c 74%);
+    }
+    75% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(75%, white), color-stop(75%, #49311c));
+        background: linear-gradient(white 75%, #49311c 75%);
+    }
+    76% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(76%, white), color-stop(76%, #49311c));
+        background: linear-gradient(white 76%, #49311c 76%);
+    }
+    77% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(77%, white), color-stop(77%, #49311c));
+        background: linear-gradient(white 77%, #49311c 77%);
+    }
+    78% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(78%, white), color-stop(78%, #49311c));
+        background: linear-gradient(white 78%, #49311c 78%);
+    }
+    79% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(79%, white), color-stop(79%, #49311c));
+        background: linear-gradient(white 79%, #49311c 79%);
+    }
+    80% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(80%, white), color-stop(80%, #49311c));
+        background: linear-gradient(white 80%, #49311c 80%);
+    }
+    81% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(81%, white), color-stop(81%, #49311c));
+        background: linear-gradient(white 81%, #49311c 81%);
+    }
+    82% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(82%, white), color-stop(82%, #49311c));
+        background: linear-gradient(white 82%, #49311c 82%);
+    }
+    83% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(83%, white), color-stop(83%, #49311c));
+        background: linear-gradient(white 83%, #49311c 83%);
+    }
+    84% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(84%, white), color-stop(84%, #49311c));
+        background: linear-gradient(white 84%, #49311c 84%);
+    }
+    85% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(85%, white), color-stop(85%, #49311c));
+        background: linear-gradient(white 85%, #49311c 85%);
+    }
+    86% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(86%, white), color-stop(86%, #49311c));
+        background: linear-gradient(white 86%, #49311c 86%);
+    }
+    87% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(87%, white), color-stop(87%, #49311c));
+        background: linear-gradient(white 87%, #49311c 87%);
+    }
+    88% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(88%, white), color-stop(88%, #49311c));
+        background: linear-gradient(white 88%, #49311c 88%);
+    }
+    89% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(89%, white), color-stop(89%, #49311c));
+        background: linear-gradient(white 89%, #49311c 89%);
+    }
+    90% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(90%, white), color-stop(90%, #49311c));
+        background: linear-gradient(white 90%, #49311c 90%);
+    }
+    91% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(91%, white), color-stop(91%, #49311c));
+        background: linear-gradient(white 91%, #49311c 91%);
+    }
+    92% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(92%, white), color-stop(92%, #49311c));
+        background: linear-gradient(white 92%, #49311c 92%);
+    }
+    93% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(93%, white), color-stop(93%, #49311c));
+        background: linear-gradient(white 93%, #49311c 93%);
+    }
+    94% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(94%, white), color-stop(94%, #49311c));
+        background: linear-gradient(white 94%, #49311c 94%);
+    }
+    95% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(95%, white), color-stop(95%, #49311c));
+        background: linear-gradient(white 95%, #49311c 95%);
+    }
+    96% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(96%, white), color-stop(96%, #49311c));
+        background: linear-gradient(white 96%, #49311c 96%);
+    }
+    97% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(97%, white), color-stop(97%, #49311c));
+        background: linear-gradient(white 97%, #49311c 97%);
+    }
+    98% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(98%, white), color-stop(98%, #49311c));
+        background: linear-gradient(white 98%, #49311c 98%);
+    }
+    99% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(99%, white), color-stop(99%, #49311c));
+        background: linear-gradient(white 99%, #49311c 99%);
+    }
+    100% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(100%, white), to(#49311c));
+        background: linear-gradient(white 100%, #49311c 100%);
+    }
+}
+
+@keyframes drinking {
+    0% {
+        background: -webkit-gradient(linear, left top, left bottom, from(white), color-stop(0%, #49311c));
+        background: linear-gradient(white 0%, #49311c 0%);
+    }
+    1% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(1%, white), color-stop(1%, #49311c));
+        background: linear-gradient(white 1%, #49311c 1%);
+    }
+    2% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(2%, white), color-stop(2%, #49311c));
+        background: linear-gradient(white 2%, #49311c 2%);
+    }
+    3% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(3%, white), color-stop(3%, #49311c));
+        background: linear-gradient(white 3%, #49311c 3%);
+    }
+    4% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(4%, white), color-stop(4%, #49311c));
+        background: linear-gradient(white 4%, #49311c 4%);
+    }
+    5% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(5%, white), color-stop(5%, #49311c));
+        background: linear-gradient(white 5%, #49311c 5%);
+    }
+    6% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(6%, white), color-stop(6%, #49311c));
+        background: linear-gradient(white 6%, #49311c 6%);
+    }
+    7% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(7%, white), color-stop(7%, #49311c));
+        background: linear-gradient(white 7%, #49311c 7%);
+    }
+    8% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(8%, white), color-stop(8%, #49311c));
+        background: linear-gradient(white 8%, #49311c 8%);
+    }
+    9% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(9%, white), color-stop(9%, #49311c));
+        background: linear-gradient(white 9%, #49311c 9%);
+    }
+    10% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(10%, white), color-stop(10%, #49311c));
+        background: linear-gradient(white 10%, #49311c 10%);
+    }
+    11% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(11%, white), color-stop(11%, #49311c));
+        background: linear-gradient(white 11%, #49311c 11%);
+    }
+    12% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(12%, white), color-stop(12%, #49311c));
+        background: linear-gradient(white 12%, #49311c 12%);
+    }
+    13% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(13%, white), color-stop(13%, #49311c));
+        background: linear-gradient(white 13%, #49311c 13%);
+    }
+    14% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(14%, white), color-stop(14%, #49311c));
+        background: linear-gradient(white 14%, #49311c 14%);
+    }
+    15% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(15%, white), color-stop(15%, #49311c));
+        background: linear-gradient(white 15%, #49311c 15%);
+    }
+    16% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(16%, white), color-stop(16%, #49311c));
+        background: linear-gradient(white 16%, #49311c 16%);
+    }
+    17% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(17%, white), color-stop(17%, #49311c));
+        background: linear-gradient(white 17%, #49311c 17%);
+    }
+    18% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(18%, white), color-stop(18%, #49311c));
+        background: linear-gradient(white 18%, #49311c 18%);
+    }
+    19% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(19%, white), color-stop(19%, #49311c));
+        background: linear-gradient(white 19%, #49311c 19%);
+    }
+    20% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(20%, white), color-stop(20%, #49311c));
+        background: linear-gradient(white 20%, #49311c 20%);
+    }
+    21% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(21%, white), color-stop(21%, #49311c));
+        background: linear-gradient(white 21%, #49311c 21%);
+    }
+    22% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(22%, white), color-stop(22%, #49311c));
+        background: linear-gradient(white 22%, #49311c 22%);
+    }
+    23% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(23%, white), color-stop(23%, #49311c));
+        background: linear-gradient(white 23%, #49311c 23%);
+    }
+    24% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(24%, white), color-stop(24%, #49311c));
+        background: linear-gradient(white 24%, #49311c 24%);
+    }
+    25% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(25%, white), color-stop(25%, #49311c));
+        background: linear-gradient(white 25%, #49311c 25%);
+    }
+    26% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(26%, white), color-stop(26%, #49311c));
+        background: linear-gradient(white 26%, #49311c 26%);
+    }
+    27% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(27%, white), color-stop(27%, #49311c));
+        background: linear-gradient(white 27%, #49311c 27%);
+    }
+    28% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(28%, white), color-stop(28%, #49311c));
+        background: linear-gradient(white 28%, #49311c 28%);
+    }
+    29% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(29%, white), color-stop(29%, #49311c));
+        background: linear-gradient(white 29%, #49311c 29%);
+    }
+    30% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(30%, white), color-stop(30%, #49311c));
+        background: linear-gradient(white 30%, #49311c 30%);
+    }
+    31% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(31%, white), color-stop(31%, #49311c));
+        background: linear-gradient(white 31%, #49311c 31%);
+    }
+    32% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(32%, white), color-stop(32%, #49311c));
+        background: linear-gradient(white 32%, #49311c 32%);
+    }
+    33% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(33%, white), color-stop(33%, #49311c));
+        background: linear-gradient(white 33%, #49311c 33%);
+    }
+    34% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(34%, white), color-stop(34%, #49311c));
+        background: linear-gradient(white 34%, #49311c 34%);
+    }
+    35% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(35%, white), color-stop(35%, #49311c));
+        background: linear-gradient(white 35%, #49311c 35%);
+    }
+    36% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(36%, white), color-stop(36%, #49311c));
+        background: linear-gradient(white 36%, #49311c 36%);
+    }
+    37% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(37%, white), color-stop(37%, #49311c));
+        background: linear-gradient(white 37%, #49311c 37%);
+    }
+    38% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(38%, white), color-stop(38%, #49311c));
+        background: linear-gradient(white 38%, #49311c 38%);
+    }
+    39% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(39%, white), color-stop(39%, #49311c));
+        background: linear-gradient(white 39%, #49311c 39%);
+    }
+    40% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(40%, white), color-stop(40%, #49311c));
+        background: linear-gradient(white 40%, #49311c 40%);
+    }
+    41% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(41%, white), color-stop(41%, #49311c));
+        background: linear-gradient(white 41%, #49311c 41%);
+    }
+    42% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(42%, white), color-stop(42%, #49311c));
+        background: linear-gradient(white 42%, #49311c 42%);
+    }
+    43% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(43%, white), color-stop(43%, #49311c));
+        background: linear-gradient(white 43%, #49311c 43%);
+    }
+    44% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(44%, white), color-stop(44%, #49311c));
+        background: linear-gradient(white 44%, #49311c 44%);
+    }
+    45% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(45%, white), color-stop(45%, #49311c));
+        background: linear-gradient(white 45%, #49311c 45%);
+    }
+    46% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(46%, white), color-stop(46%, #49311c));
+        background: linear-gradient(white 46%, #49311c 46%);
+    }
+    47% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(47%, white), color-stop(47%, #49311c));
+        background: linear-gradient(white 47%, #49311c 47%);
+    }
+    48% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(48%, white), color-stop(48%, #49311c));
+        background: linear-gradient(white 48%, #49311c 48%);
+    }
+    49% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(49%, white), color-stop(49%, #49311c));
+        background: linear-gradient(white 49%, #49311c 49%);
+    }
+    50% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(50%, white), color-stop(50%, #49311c));
+        background: linear-gradient(white 50%, #49311c 50%);
+    }
+    51% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(51%, white), color-stop(51%, #49311c));
+        background: linear-gradient(white 51%, #49311c 51%);
+    }
+    52% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(52%, white), color-stop(52%, #49311c));
+        background: linear-gradient(white 52%, #49311c 52%);
+    }
+    53% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(53%, white), color-stop(53%, #49311c));
+        background: linear-gradient(white 53%, #49311c 53%);
+    }
+    54% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(54%, white), color-stop(54%, #49311c));
+        background: linear-gradient(white 54%, #49311c 54%);
+    }
+    55% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(55%, white), color-stop(55%, #49311c));
+        background: linear-gradient(white 55%, #49311c 55%);
+    }
+    56% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(56%, white), color-stop(56%, #49311c));
+        background: linear-gradient(white 56%, #49311c 56%);
+    }
+    57% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(57%, white), color-stop(57%, #49311c));
+        background: linear-gradient(white 57%, #49311c 57%);
+    }
+    58% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(58%, white), color-stop(58%, #49311c));
+        background: linear-gradient(white 58%, #49311c 58%);
+    }
+    59% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(59%, white), color-stop(59%, #49311c));
+        background: linear-gradient(white 59%, #49311c 59%);
+    }
+    60% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(60%, white), color-stop(60%, #49311c));
+        background: linear-gradient(white 60%, #49311c 60%);
+    }
+    61% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(61%, white), color-stop(61%, #49311c));
+        background: linear-gradient(white 61%, #49311c 61%);
+    }
+    62% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(62%, white), color-stop(62%, #49311c));
+        background: linear-gradient(white 62%, #49311c 62%);
+    }
+    63% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(63%, white), color-stop(63%, #49311c));
+        background: linear-gradient(white 63%, #49311c 63%);
+    }
+    64% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(64%, white), color-stop(64%, #49311c));
+        background: linear-gradient(white 64%, #49311c 64%);
+    }
+    65% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(65%, white), color-stop(65%, #49311c));
+        background: linear-gradient(white 65%, #49311c 65%);
+    }
+    66% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(66%, white), color-stop(66%, #49311c));
+        background: linear-gradient(white 66%, #49311c 66%);
+    }
+    67% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(67%, white), color-stop(67%, #49311c));
+        background: linear-gradient(white 67%, #49311c 67%);
+    }
+    68% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(68%, white), color-stop(68%, #49311c));
+        background: linear-gradient(white 68%, #49311c 68%);
+    }
+    69% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(69%, white), color-stop(69%, #49311c));
+        background: linear-gradient(white 69%, #49311c 69%);
+    }
+    70% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(70%, white), color-stop(70%, #49311c));
+        background: linear-gradient(white 70%, #49311c 70%);
+    }
+    71% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(71%, white), color-stop(71%, #49311c));
+        background: linear-gradient(white 71%, #49311c 71%);
+    }
+    72% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(72%, white), color-stop(72%, #49311c));
+        background: linear-gradient(white 72%, #49311c 72%);
+    }
+    73% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(73%, white), color-stop(73%, #49311c));
+        background: linear-gradient(white 73%, #49311c 73%);
+    }
+    74% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(74%, white), color-stop(74%, #49311c));
+        background: linear-gradient(white 74%, #49311c 74%);
+    }
+    75% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(75%, white), color-stop(75%, #49311c));
+        background: linear-gradient(white 75%, #49311c 75%);
+    }
+    76% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(76%, white), color-stop(76%, #49311c));
+        background: linear-gradient(white 76%, #49311c 76%);
+    }
+    77% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(77%, white), color-stop(77%, #49311c));
+        background: linear-gradient(white 77%, #49311c 77%);
+    }
+    78% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(78%, white), color-stop(78%, #49311c));
+        background: linear-gradient(white 78%, #49311c 78%);
+    }
+    79% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(79%, white), color-stop(79%, #49311c));
+        background: linear-gradient(white 79%, #49311c 79%);
+    }
+    80% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(80%, white), color-stop(80%, #49311c));
+        background: linear-gradient(white 80%, #49311c 80%);
+    }
+    81% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(81%, white), color-stop(81%, #49311c));
+        background: linear-gradient(white 81%, #49311c 81%);
+    }
+    82% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(82%, white), color-stop(82%, #49311c));
+        background: linear-gradient(white 82%, #49311c 82%);
+    }
+    83% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(83%, white), color-stop(83%, #49311c));
+        background: linear-gradient(white 83%, #49311c 83%);
+    }
+    84% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(84%, white), color-stop(84%, #49311c));
+        background: linear-gradient(white 84%, #49311c 84%);
+    }
+    85% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(85%, white), color-stop(85%, #49311c));
+        background: linear-gradient(white 85%, #49311c 85%);
+    }
+    86% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(86%, white), color-stop(86%, #49311c));
+        background: linear-gradient(white 86%, #49311c 86%);
+    }
+    87% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(87%, white), color-stop(87%, #49311c));
+        background: linear-gradient(white 87%, #49311c 87%);
+    }
+    88% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(88%, white), color-stop(88%, #49311c));
+        background: linear-gradient(white 88%, #49311c 88%);
+    }
+    89% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(89%, white), color-stop(89%, #49311c));
+        background: linear-gradient(white 89%, #49311c 89%);
+    }
+    90% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(90%, white), color-stop(90%, #49311c));
+        background: linear-gradient(white 90%, #49311c 90%);
+    }
+    91% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(91%, white), color-stop(91%, #49311c));
+        background: linear-gradient(white 91%, #49311c 91%);
+    }
+    92% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(92%, white), color-stop(92%, #49311c));
+        background: linear-gradient(white 92%, #49311c 92%);
+    }
+    93% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(93%, white), color-stop(93%, #49311c));
+        background: linear-gradient(white 93%, #49311c 93%);
+    }
+    94% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(94%, white), color-stop(94%, #49311c));
+        background: linear-gradient(white 94%, #49311c 94%);
+    }
+    95% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(95%, white), color-stop(95%, #49311c));
+        background: linear-gradient(white 95%, #49311c 95%);
+    }
+    96% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(96%, white), color-stop(96%, #49311c));
+        background: linear-gradient(white 96%, #49311c 96%);
+    }
+    97% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(97%, white), color-stop(97%, #49311c));
+        background: linear-gradient(white 97%, #49311c 97%);
+    }
+    98% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(98%, white), color-stop(98%, #49311c));
+        background: linear-gradient(white 98%, #49311c 98%);
+    }
+    99% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(99%, white), color-stop(99%, #49311c));
+        background: linear-gradient(white 99%, #49311c 99%);
+    }
+    100% {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(100%, white), to(#49311c));
+        background: linear-gradient(white 100%, #49311c 100%);
+    }
+}

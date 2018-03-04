@@ -323,7 +323,7 @@ App = {
                          *  end. In any case just process this fact.
                          */
 
-                        App.gameLogic.announceWinner(web3.toAscii(logs.args['player']));
+                        App.gameLogic.announceWinner(web3.toAscii(logs.args['player']), logs.args['isATie']);
                         ourGameEndedFilter.stopWatching();
                         /* After receiving `GameEnd` event, we also stop watching for movements events. */
                         ourGameMoveFilter.stopWatching();
@@ -339,22 +339,20 @@ App = {
             .watch(
                 (err, logs) => {
                     if (!err) {
+
                         /*
                          * Everything is simple. We only process the draw calls, that are given to us.
                          *  Since all logic is on Smart-Contract -> parse parameters and
                          *  make a draw call.
                          */
-
-                        logs.args['player'];
-
-                        typeof field === "string" ?
-                            web3.toAscii(field)
-                            :typeof field === "boolean" ?
-                            field ?
-                                "Game creator moves first."
-                                : "Joining player will move first."
-                            :field.c[0]
-
+                        //     :field.c[0]
+                        console.log(logs.args['xIndex1']);
+                        App.GameLogic.drawLine(
+                            [logs.args['xIndex1'], logs.args['xIndex2']],
+                            [logs.args['yIndex1'], logs.args['yIndex2']],
+                            web3.toAscii(logs.args['playerAlias']),
+                            logs.args['continueMovement']
+                        );
 
                     } else {
                         console.log("Some error occurred, while processing GameMove event.");
@@ -613,7 +611,10 @@ App = {
 
     /**
      * This callback is triggered, when we decide to connect to some game.
-     *  The request is issued to the ledger, and
+     *  The request is issued to the ledger, and after it, we wait for `GameJoined`
+     *  event to arrive.
+     *
+     * When we get it, we setup the player info, and proceed to player screen.
      */
     joinSomeGame: function (event) {
         event.preventDefault();
@@ -705,6 +706,27 @@ App = {
                     }
                 );
             });
+        });
+    },
+
+    /**
+     * Callback that is called by drawing logic,
+     *  on a `line claim` event.
+     *
+     * We send the info to Ethereum ledger, in order to
+     *  confirm(even though, we are pretty sure about it),
+     *  that such move is possilbe.
+     */
+    makeSomeMove: function (xCoord1, yCoord1, xCoord2, yCoord2) {
+
+        let meta = App.contracts.StickGame;
+
+        meta.makeMove(App.currentGameId, xCoord1, yCoord1, xCoord2, yCoord2, (err, currentTransactionHash) => {
+
+            if (err) {
+                Alert.warning("Big error", 'Some internal problem occurred while sending move information.');
+                console.log(err.message);
+            }
         });
     },
 

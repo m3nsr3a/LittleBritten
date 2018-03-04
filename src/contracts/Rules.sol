@@ -1,78 +1,81 @@
 pragma solidity ^0.4.18;
 
 /*
- *
+ * This contract represents the game logic itself.
  */
 library Rules {
 
 
     /*
-     * Constructor.
+     * Structs.
      */
 
 
     /*
-     * Initialise this entity.
+     * This struct represents connections,
+     *  that one field has to it's neighbours.
      */
-//    function Rules() public {
-//        setDirection(Direction.UP, 0, 1);
-//        setDirection(Direction.UP_RIGHT, 1, 1);
-//        setDirection(Direction.RIGHT, 1, 0);
-//        setDirection(Direction.DOWN_RIGHT, 1, -1);
-//        setDirection(Direction.DOWN, 0, -1);
-//        setDirection(Direction.DOWN_LEFT, -1, -1);
-//        setDirection(Direction.LEFT, -1, 0);
-//        setDirection(Direction.UP_LEFT, -1, 1);
-//    }
-
-
-    /*
-     * Variables.
-     */
-
-
     struct Field {
-        bool isRed;
-        bool flag;
+        uint8[4] connections;
     }
 
-
+    /*
+     * This struct is used for holding one game state.
+     */
     struct State {
+        /* Total number of players in the game. */
         uint8 numberOfPlayers;
+
+        /* Dimensions of game board. */
         uint8 xMapMaxSize;
         uint8 yMapMaxSize;
-        mapping(uint256 => mapping(uint256 => Field)) fast_fields;
-        int8[64] state;
+
+        /* Number of occupied lines in game. */
         uint8 occupiedLines;
+
+        /* Address of first player. */
         address firstPlayer;
+
+        /* Is true, if */
         bool isFirstPlayer;
+
+        /* Hold the information about the game. */
+        mapping(uint8 => mapping(uint8 => Field)) fast_fields;
+
+        /* Players' score info. */
+        uint8 player1Score;
+        uint8 player2Score;
     }
 
+    /*
+     * Useful enum, for initial field filling.
+     */
     enum Direction {
-        UP,         //  [0, 1]
-        RIGHT,      //  [1, 0]
-        DOWN,       //  [0, -1]
-        LEFT       //  [-1, 0]
+        UP,         //  [1, 0, 0, 0]
+        RIGHT,      //  [0, 1, 0, 0]
+        DOWN,       //  [0, 0, 1, 0]
+        LEFT        //  [0, 0, 0, 1]
     }
 
 
-    enum Player {
-        RED,        // true
-        GREEN       // false
-    }
+    /* Core library functions. */
 
-    function Players(Player p) internal pure returns (bool) {
-        if (p == Player.RED) {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * Validates if a move is technically (not legally) possible,
      * i.e. if piece is capable to move this way
+     *
+     * @param State self - Reference to current state object.
+     * @param uint8 xIndex1 - The x coordinate of first vertex on the game grid.
+     * @param uint8 yIndex1 - The y coordinate of first vertex on the game grid.
+     * @param uint8 xIndex2 - The x coordinate of second vertex on the game grid.
+     * @param uint8 yIndex2 - The y coordinate of second vertex on the game grid.
      */
-    function checkMove(State storage self, uint256 xIndex, uint256 yIndex) internal view {
+    function checkMove(
+        State storage self,
+        uint8 xIndex1, uint8 yIndex1,
+        uint8 xIndex2, uint8 yIndex2
+    ) internal view {
 
 
         bool currentPlayerColor;
@@ -99,7 +102,21 @@ library Rules {
     }
 
 
-    function makeMove(State storage self, uint256 xIndex, uint256 yIndex, bool currentPlayerColor) internal {
+    /*
+     *
+     *
+     * @param State self - Reference to current state object.
+     * @param uint8 xIndex1 - The x coordinate of first vertex on the game grid.
+     * @param uint8 yIndex1 - The y coordinate of first vertex on the game grid.
+     * @param uint8 xIndex2 - The x coordinate of second vertex on the game grid.
+     * @param uint8 yIndex2 - The y coordinate of second vertex on the game grid.
+     */
+    function makeMove(
+        State storage self,
+        uint8 xIndex1, uint8 yIndex1,
+        uint8 xIndex2, uint8 yIndex2,
+        bool currentPlayerColor
+    ) internal {
 
         self.fast_fields[xIndex][yIndex].flag = true;
         self.fast_fields[xIndex][yIndex].isRed = currentPlayerColor;
@@ -111,26 +128,75 @@ library Rules {
         self.occupiedLines--;
     }
 
-    function getNumberOfMoves(State storage self) internal view returns (uint) {
+    /*
+     * Return total number of moves made, i.e. how many lines was placed.
+     *
+     * @param State self - Reference to current state object.
+     *
+     * @returns uint8 numberOfOccupiedLines - Number of placed lines.
+     */
+    function getNumberOfMovesMade(State storage self) internal view returns (uint8 numberOfOccupiedLines) {
         return self.occupiedLines;
     }
 
-    function getFirstPlayer(State storage self) internal view returns (address) {
-        return self.firstPlayer;
-    }
+    /*
+     * By given two vertices coordinates, return true if there is line between them.
+     *
+     * @param State self - Reference to current state object.
+     * @param uint8 xIndex1 - The x coordinate of first vertex on the game grid.
+     * @param uint8 yIndex1 - The y coordinate of first vertex on the game grid.
+     * @param uint8 xIndex2 - The x coordinate of second vertex on the game grid.
+     * @param uint8 yIndex2 - The y coordinate of second vertex on the game grid.
+     *
+     * @returns bool fag - Will be true, if there is line between two given vertices, otherwise false.
+     */
+    function getStateByIndex(
+        State storage self,
+        uint8 xIndex1, uint8 yIndex1,
+        uint8 xIndex2, uint8 yIndex2
+    ) internal view returns (bool flag) {
 
-    function getStateByIndex(State storage self, uint256 xIndex, uint256 yIndex) internal view returns (bool) {
     }
 
 
     /*
      * This function, says, who won in the game.
-     * Note, that the draw, is also possible.
+     *  Note, that the draw, is also possible.
      *
      * @param bytes32 gameId - The Id of a game, where to find winner.
      *
      * @returns int choice - `-1` if player1 is the winner, `1` if player2, and `0` in case of a draw.
      */
-    function determineWinner(bytes32 gameId) internal view returns (int8 choice) {
+    function determineWinner(State storage self) internal view returns (int8 choice) {
+        if (self.player1Score < self.player2Score) {
+            choice = 1;
+        } else if (self.player1Score > self.player2Score) {
+            choice = -1;
+        } else {
+            choice = 0;
+        }
+    }
+
+
+    /* Helper library functions. */
+
+    /*
+     * Helper function, to get base Field
+     *
+     * @param Direction d -
+     *
+     * @returns uint8[4]
+     */
+    function Directions(Direction d) internal pure returns (uint8[4]) {
+
+        if (d == Direction.UP) {
+            return [1, 0, 0, 0];
+        } else if (d == Direction.RIGHT) {
+            return [0, 1, 0, 0];
+        } else if (d == Direction.DOWN) {
+            return [0, 0, 1, 0];
+        } else if (d == Direction.LEFT) {
+            return [0, 0, 0, 1];
+        }
     }
 }
