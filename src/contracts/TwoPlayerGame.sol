@@ -190,7 +190,7 @@ contract TwoPlayerGame {
         require(game.isClosed);
 
         /* If game have already ended -> trow. */
-        require(game.winner != 0);
+        require(game.winner == 0);
 
         /* Set up, the winner and loser. */
         if (game.player1 == msg.sender) {

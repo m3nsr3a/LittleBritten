@@ -187,7 +187,6 @@ contract StickGame is TwoPlayerGame {
         /* If next player is us -> highlight this info in game state. */
         if (gamesById[gameId].nextPlayer == msg.sender) {
             gameStatesById[gameId].firstPlayer   = msg.sender;
-            gameStatesById[gameId].isFirstPlayer = false;
         }
 
         GameClosed(

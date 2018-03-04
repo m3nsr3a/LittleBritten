@@ -226,8 +226,8 @@ App = {
                                                             web3.toAscii(field)
                                                             : typeof field === "boolean" ?
                                                             field ?
-                                                                "First move is ours."
-                                                                : "Other player goes first."
+                                                                "Game creator moves first."
+                                                                : "Joining player will move first."
                                                             : field.c[0]
                                                     )
                                         )
@@ -322,7 +322,7 @@ App = {
                          *  end. In any case just process this fact.
                          */
 
-                        App.gameLogic.announceWinner(web3.toAscii(logs.args['winnerName']));
+                        App.gameLogic.announceWinner(web3.toAscii(logs.args['player']));
                         ourGameEndedFilter.stopWatching();
                         /* After receiving `GameEnd` event, we also stop watching for movements events. */
                         ourGameMoveFilter.stopWatching();
@@ -419,8 +419,8 @@ App = {
                                             web3.toAscii(field)
                                             :typeof field === "boolean" ?
                                                 field ?
-                                                    "First move is ours."
-                                                    :"Other player goes first."
+                                                    "Game creator moves first."
+                                                    : "Joining player will move first."
                                                 :field.c[0]
                                     )
                             ))
@@ -489,6 +489,7 @@ App = {
                                 console.log('Here comes our latest game initialized event -> proceed to waiting screen');
 
                                 App.weMoveFirst = log.args['player1MovesFirst'];
+                                App.ourName = web3.toAscii(log.args['player1Alias']);
                                 App.currentGameId = log.args['gameId'];
 
                                 /* Update and show waiting screen, until somebody connects to our game. */
@@ -677,6 +678,7 @@ App = {
                                 /* bool for movement. and nick-name in bytes format. */
                                 App.weMoveFirst = !gameInfo[5]; // Player1 moves first. Currently we are second player.
                                 App.enemyName = web3.toAscii(gameInfo[0]);
+                                App.ourName = web3.toAscii(gameInfo[1]);
 
                                 App.gameLogic.start(App.buildGameInfo());
                                 App.bindGameSpecificEvents(true);
@@ -699,10 +701,15 @@ App = {
     /**
      * Called, when user decides to play one more game,
      *  after he is done with the previous one.
+     *
+     * The point, is that our logic, is already nicely organized, so
+     *  in reality, we don't really need to do anything.
      */
-    cleanUpAndReturn: function (event) {
-        // App.$gameScreen.hide();
-        // App.$startScreen.show();
+    cleanUpAndReturn: function () {
+
+        App.gameLogic.stop();
+        App.$gameScreen.hide();
+        App.$startScreen.show();
     },
 
     /**

@@ -302,6 +302,10 @@ tr:not(:first-child):hover {
 
 footer {
     text-align: center;
+    margin: 0 auto;
+    position: relative;
+    bottom: 0;
+    left: 0;
 }
 
 footer p a {
@@ -323,7 +327,7 @@ footer p a {
 .more-link {
     left: calc(50% - 100px);
     position: absolute;
-    top: calc(50% - 50px);
+    top: 30%;
     user-select: none;
 }
 

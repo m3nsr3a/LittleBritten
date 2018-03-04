@@ -27,6 +27,7 @@ class GameLogic {
 
         /* Index that points to `us` as a player in the player array. */
         this._us = 0;
+        this._other = 1;
 
         /* Number of squares, that are occupied. */
         this._occupiedSquares = 0;
@@ -88,6 +89,92 @@ class GameLogic {
     }
 
     /**
+     * Figure out who won the game and display the winner.
+     *
+     * This function, is called exclusively, on the Ethereum ledger callback `GameEnd`.
+     */
+    announceWinner(winnerName) {
+
+        /*
+         * It's either somebody surrendered, or the game really ended.
+         *
+         * Since on frontend we also keep track of players game status,
+         *  we definitely can say, who really won the game
+         */
+        if (!this.announceWinnerIsPossible) {
+            console.log("Somebody is surrendering.");
+            console.log(winnerName);
+            console.log(this.ourPlayer.name);
+            console.log(typeof this.ourPlayer.name);
+            console.log(typeof winnerName);
+            if (winnerName.toString() > this.ourPlayer.name.toString()) {
+                console.log(winnerName.length);
+                console.log(this.ourPlayer.name.length);
+            } else {
+                console.log("other is greater? " + (winnerName.toString() < this.ourPlayer.name.toString()).toString())
+            }
+            if (winnerName.toString() === this.ourPlayer.name.toString()) {
+                console.log('here');
+                console.log(this.ourPlayer);
+                GameLogic.displayWinnerOnSurrender(this.ourPlayer, false);
+            } else {
+                console.log('there');
+                console.log(this.otherPlayer);
+                console.log('ing ame');
+                GameLogic.displayWinnerOnSurrender(this.otherPlayer, true);
+            }
+
+        } else {
+            console.log("This time, game came to it's logical conclusion.");
+
+            let i;
+            let highScoreTies = [];
+            let highScorePlayer = this.players[0];
+
+            // figure out the highest scoring player
+            for (i = 0; i < this.players.length; i++) {
+
+                if (this.players[i].score > highScorePlayer.score) {
+                    highScorePlayer = this.players[i];
+                }
+            }
+
+            // figure out if there are any ties
+            for (i = 0; i < this.players.length; i++) {
+                if (this.players[i].score === highScorePlayer.score &&
+                    this.players[i].index !== highScorePlayer.index) {
+                    highScoreTies.push(this.players[i]);
+                }
+            }
+
+            console.log('Below are winner names. Check that they are the same.');
+            console.log(winnerName);
+            console.log(highScoreTies);
+            console.log(highScorePlayer);
+            if (highScoreTies.length > 0) {
+                GameLogic.displayWinner({player: highScoreTies, isATie: true});
+            } else {
+                GameLogic.displayWinner({player: highScorePlayer, isATie: false});
+            }
+        }
+    }
+
+    /**
+     * Triggered, when the game is over, when user returns to start screen.
+     */
+    stop() {
+        /* First, clear up the player array. */
+        this._players.length = 0;
+
+        /* Then zero-out some game-specific parameters. */
+        this._curPlayer = 0;
+        this._occupiedSquares = 0;
+
+        /* Finally, clear all the graphic elements. */
+        this.renderer.dispose();
+    }
+
+    /**
      * Is called, then the player is pressing on the line.
      *
      * We check, that it's current user turn.
@@ -117,6 +204,7 @@ class GameLogic {
          */
 
         this.possilbeClaim = lineObject;
+        console.log(lineObject);
         // ToDo: call to eth.
 
         /*
@@ -124,10 +212,10 @@ class GameLogic {
          * We wont draw anything yet, just show, that we are waiting for something.
          */
 
-        this._isWaitingForConformation = true;
+        // this._isWaitingForConformation = true;
 
-        this.options.application.$gameScreen.hide();
-        this.options.application.$waitScreen.show();
+        // this.options.application.$gameScreen.hide();
+        // this.options.application.$waitScreen.show();
     }
 
     /**
@@ -193,66 +281,6 @@ class GameLogic {
         this._curPlayer %= this.options.numPlayers;
     }
 
-
-    /* Inner methods of the class. */
-
-    /**
-     * Figure out who won the game and display the winner.
-     *
-     * This function, is called exclusively, on the Ethereum ledger callback `GameEnd`.
-     */
-    announceWinner(winnerName) {
-
-        /*
-         * It's either somebody surrendered, or the game really ended.
-         *
-         * Since on frontend we also keep track of players game status,
-         *  we definitely can say, who really won the game
-         */
-        if (!this.announceWinnerIsPossible) {
-            console.log("Somebody is surrendering.");
-            console.log(winnerName);
-            if (winnerName === this.ourPlayer.name) {
-                GameLogic.displayWinnerOnSurrender({player: winnerName, weSurrendered: false});
-            } else {
-                GameLogic.displayWinnerOnSurrender({player: winnerName, weSurrendered: true});
-            }
-
-        } else {
-            console.log("This time, game came to it's logical conclusion.");
-
-            let i;
-            let highScoreTies = [];
-            let highScorePlayer = this.players[0];
-
-            // figure out the highest scoring player
-            for (i = 0; i < this.players.length; i++) {
-
-                if (this.players[i].score > highScorePlayer.score) {
-                    highScorePlayer = this.players[i];
-                }
-            }
-
-            // figure out if there are any ties
-            for (i = 0; i < this.players.length; i++) {
-                if (this.players[i].score === highScorePlayer.score &&
-                    this.players[i].index !== highScorePlayer.index) {
-                    highScoreTies.push(this.players[i]);
-                }
-            }
-
-            console.log('Below are winner names. Check that they are the same.');
-            console.log(winnerName);
-            console.log(highScoreTies);
-            console.log(highScorePlayer);
-            if (highScoreTies.length > 0) {
-                GameLogic.displayWinner({player: highScoreTies, isATie: true});
-            } else {
-                GameLogic.displayWinner({player: highScorePlayer, isATie: false});
-            }
-        }
-    }
-
     /**
      * Frontend logic, for counting `completed` squares.
      */
@@ -282,9 +310,6 @@ class GameLogic {
      * Notifies the current player that it's their turn.
      */
     notifyPlayer() {
-        console.log('We are displaying users');
-        console.log(this.curPlayerId);
-        console.log(this.players[this.curPlayerId]);
         GameLogic.displayCurrentPlayer(this.players[this.curPlayerId]);
     }
 
@@ -294,6 +319,7 @@ class GameLogic {
     buildPlayers(playerInfo) {
 
         for (let i = 0; i < this.options.numPlayers; i++) {
+            console.log(playerInfo[i]);
 
             this.players[i] = playerInfo[i];
             this.players[i].index = i;
@@ -402,6 +428,7 @@ class GameLogic {
      * weSurrendered - true, if the one who surrendered in the game is us.
      */
     static displayWinnerOnSurrender(player, weSurrendered) {
+        console.log(player);
         /*
          * Hide the player naming label, surrender button, and game itself. */
         document.getElementById('current-player-display').setAttribute('style', 'display: none;');
@@ -502,6 +529,10 @@ class GameLogic {
 
     get ourPlayer() {
         return this._players[this._us];
+    }
+
+    get otherPlayer() {
+        return this._players[this._other];
     }
 
     get players() {

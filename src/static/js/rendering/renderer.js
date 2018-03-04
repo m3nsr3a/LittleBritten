@@ -57,29 +57,12 @@ class Renderer {
     }
 
     /**
-     * This function is called any time, we either lost state, and want
-     * to redraw everything.
-     */
-    reDraw() {
-        this.dispose();
-        this.init();
-    }
-
-    /**
      * Zero out all arrays with graphical items.
      */
     dispose() {
         this.disposeVertices();
         this.disposeLines();
         this.disposeSquares();
-    }
-
-    /**
-     * Logical alias to `reDraw()` function. Use this one, when
-     * you finished the game, and want to start new one.
-     */
-    reStart() {
-        this.reDraw();
     }
 
     /**
