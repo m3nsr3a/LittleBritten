@@ -6,18 +6,19 @@ services:
     hostname: ledger
     ports:
       - "8545:8545"
+      - "30303:30303"
     command: ganache-cli --port=8545 --defaultBalanceEther=10 --blockTime=1 --account='${TEST_PRIVATE_KEY},500000000000000000000' --unlock='${TEST_ADDRESS}'
 
-  cite:
-    build:
-      context: ./src/
-      dockerfile: SubDockerfile
-    hostname: cite
-    depends_on:
-      - ledger
-    ports:
-      - "8080:8080"
-    links:
-      - ledger
-    environment:
-      - TESTNET=http://ledger:8545
+#  cite:
+#    build:
+#      context: ./src/
+#      dockerfile: SubDockerfile
+#    hostname: cite
+#    depends_on:
+#      - ledger
+#    ports:
+#      - "8080:8080"
+#    links:
+#      - ledger
+#    environment:
+#      - TESTNET=http://ledger:8545

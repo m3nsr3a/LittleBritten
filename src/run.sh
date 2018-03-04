@@ -50,8 +50,8 @@ die() {
 # Establish launching pipeline.
 main() {
     check_truffle_version;
-    compile_contracts_and_deploy;
     resolve_python_dependencies;
+    compile_contracts_and_deploy;
 
     gunicorn -c conf.py static_server:app
     exit 0

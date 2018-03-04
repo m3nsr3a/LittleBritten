@@ -243,37 +243,92 @@ contract StickGame is TwoPlayerGame {
         uint8 xIndex1, uint8 yIndex1,
         uint8 xIndex2, uint8 yIndex2
     ) notEnded(gameId) onlyPlayers(gameId) isClosed(gameId) public {
-        Game memory game = gamesById[gameId];
 
         /* First, check, that it's this players turn. */
-        require(msg.sender == game.nextPlayer);
+        require(msg.sender == gamesById[gameId].nextPlayer);
 
         /* Confirm, that we may preform such move, according to game logic & rules. */
-        gameStatesById[gameId].checkMove(
-            xIndex1, yIndex1,
-            xIndex2, yIndex2,
-            msg.sender == gameStatesById[gameId].firstPlayer
-        );
-
-        /* Make the move, in a sense of moving term swapping. */
-        _makeMove(gameId, playerHadCompletedSquare);
+//        gameStatesById[gameId].checkMove(
+//            xIndex1, yIndex1,
+//            xIndex2, yIndex2
+//        );
 
         /* Make the real move. */
-        playerHadCompletedSquare = gameStatesById[gameId].makeMove(xIndex1, yIndex1, xIndex2, yIndex2, msg.sender);
+//        uint8 playerScore = gameStatesById[gameId].makeMove(
+//            xIndex1, yIndex1,
+//            xIndex2, yIndex2,
+//            true
+//        );
+
+        require(gameStatesById[gameId].fast_fields[xIndex1][yIndex1][xIndex2][yIndex2] == 0);
+
+        if (gameStatesById[gameId].firstPlayer == msg.sender) {
+            gameStatesById[gameId].fast_fields[xIndex1][yIndex1][xIndex2][yIndex2] = 1;
+        } else {
+            gameStatesById[gameId].fast_fields[xIndex1][yIndex1][xIndex2][yIndex2] = 2;
+        }
+
+        uint8 score = 0;
+        // top square
+         if (
+             gameStatesById[gameId].fast_fields[xIndex1][yIndex1 - 1][xIndex2][yIndex2 - 1] != 0 &&
+             gameStatesById[gameId].fast_fields[xIndex1][yIndex1 - 1][xIndex1][yIndex1] != 0 &&
+             gameStatesById[gameId].fast_fields[xIndex2][yIndex2 - 1][xIndex2][yIndex2] != 0
+         ) {
+             score += 1;
+         }
+        // bottom square
+         if (
+             gameStatesById[gameId].fast_fields[xIndex1][yIndex1 + 1][xIndex2][yIndex2 + 1] != 0 &&
+             gameStatesById[gameId].fast_fields[xIndex1][yIndex1][xIndex1][yIndex1 + 1] != 0 &&
+             gameStatesById[gameId].fast_fields[xIndex2][yIndex2][xIndex2][yIndex2 + 1] != 0
+         ) {
+             score += 1;
+         }
+        // left square
+        if (
+            gameStatesById[gameId].fast_fields[xIndex1 - 1][yIndex1][xIndex2 - 1][yIndex2] != 0 &&
+            gameStatesById[gameId].fast_fields[xIndex1 - 1][yIndex1][xIndex1][yIndex1] != 0 &&
+            gameStatesById[gameId].fast_fields[xIndex2 - 1][yIndex2][xIndex2][yIndex2] != 0
+        ) {
+            score += 1;
+        }
+        // right square
+        if (
+            gameStatesById[gameId].fast_fields[xIndex1 + 1][yIndex1][xIndex2 + 1][yIndex2] != 0 &&
+            gameStatesById[gameId].fast_fields[xIndex1][yIndex1][xIndex1 + 1][yIndex1] != 0 &&
+            gameStatesById[gameId].fast_fields[xIndex2][yIndex2][xIndex2 + 1][yIndex2] != 0
+        ) {
+            score += 1;
+        }
+
+        /* Decrease number of available fields. */
+        gameStatesById[gameId].occupiedLines--;
+
+        /* Updating players score */
+        if (gamesById[gameId].player1 == msg.sender) {
+            gameStatesById[gameId].player1Score += score;
+        } else {
+            gameStatesById[gameId].player2Score += score;
+        }
+
+
+        /* Make the move, in a sense of moving term swapping. */
+        _makeMove(gameId, score > 0);
 
         GameMove(
             gameId,
             msg.sender,
             stringToBytes32(
-                msg.sender == game.player1?
-                    game.player1Alias
-                    : game.player2Alias
+                msg.sender == gamesById[gameId].player1?
+                    gamesById[gameId].player1Alias
+                    : gamesById[gameId].player2Alias
             ),
             xIndex1,
             yIndex1,
             xIndex2,
             yIndex2,
-            playerHadCompletedSquare
+            score > 0
         );
 
         /* Finally, check that the game haven't ended yet. */
@@ -281,7 +336,7 @@ contract StickGame is TwoPlayerGame {
 
             _finishGame(gameId, gameStatesById[gameId].determineWinner());
 
-            GameEnded(gameId, game.winner, stringToBytes32(game.winnerName), game.winner == 0? true: false);
+            GameEnded(gameId, gamesById[gameId].winner, stringToBytes32(gamesById[gameId].winnerName), gamesById[gameId].winner == 0? true: false);
         }
     }
 
@@ -315,10 +370,10 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game, to get first player info.
      */
-    function getFirstPlayerInfo(bytes32 gameId) public pure returns (address, bytes32) {
+    function getFirstPlayerInfo(bytes32 gameId) public view returns (address, bytes32) {
         Game memory game = gamesById[gameId];
 
-        if (game.gameStatesById[gameId].firstPlayer == game.player1) {
+        if (gameStatesById[gameId].firstPlayer == game.player1) {
             return (game.player1, stringToBytes32(game.player1Alias));
         } else {
             return (game.player2, stringToBytes32(game.player2Alias));
@@ -331,10 +386,10 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game, to get second player info.
      */
-    function getSecondPlayerInfo(bytes32 gameId) public pure returns (address, bytes32) {
+    function getSecondPlayerInfo(bytes32 gameId) public view returns (address, bytes32) {
         Game memory game = gamesById[gameId];
 
-        if (game.gameStatesById[gameId].firstPlayer == game.player1) {
+        if (gameStatesById[gameId].firstPlayer == game.player1) {
             return (game.player2, stringToBytes32(game.player2Alias));
         } else {
             return (game.player1, stringToBytes32(game.player1Alias));
@@ -365,7 +420,7 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - ID of the game, to get number of left moves.
      */
     function getNumberOfLeftMoves(bytes32 gameId) public view returns (uint) {
-        return 144 - gameStatesById[gameId].getNumberOfMoves();
+        return 144 - gameStatesById[gameId].getNumberOfMovesMade();
     }
 
 

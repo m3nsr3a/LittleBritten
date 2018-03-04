@@ -1,359 +1,360 @@
-App = {
+    App = {
 
-    /**
-     * Js implementation of Python zip function, with the feature
-     *  of passing custom `concatenator`.
-     */
-    zipListsWith: (f, xss) =>
-        (xss.length ? xss[0] : [])
-            .map(function (_, i) {
-                return f(xss.map(function (xs) {
-                    return xs[i];
-                }));
-            }),
-
-    /**
-     * Weird hack, that turns `noodle-callback` function,
-     *  into promise.
-     *
-     * It's really simple implementation, so it doesn't
-     *  work for functions with multiple parameters.
-     */
-    promisify:
-            func =>
-                    options =>
-                        new Promise((resolve, reject) => {
-                            func(options, function cb(err, val) {
-                                return err ? reject(err) : resolve(val);
-                            });
-                        }),
-
-    /* Represents the provider, that injected web3js instance. */
-    web3Provider: null,
-
-    /* List of attached contracts. */
-    contracts: {},
-
-    /* GameLogic logic object. Doesn't have any  */
-    gameLogic: null,
-
-    /**
-     * The entry point of our application.
-     */
-    init: function () {
-
-        /*
-         * Currently we hard-code couple of parameters,
-         * since there is no really support for them, yet.
+        /**
+         * Js implementation of Python zip function, with the feature
+         *  of passing custom `concatenator`.
          */
-        App.gameWidth = 8;
-        App.gameHigth = 8;
-        App.numberOfPlayers = 2;
+        zipListsWith: (f, xss) =>
+            (xss.length ? xss[0] : [])
+                .map(function (_, i) {
+                    return f(xss.map(function (xs) {
+                        return xs[i];
+                    }));
+                }),
 
-        /* First, init the game logic object. */
-
-        App.gameLogic = new GameLogic({
-
-            /* Currently we don't support dynamic grid, and more than 2 players, but anyways. */
-            width: 8,
-            height: 8,
-            numPlayers: 2,
-            svgId: 'game-board',
-            application: App,
-
-        });
-
-        return App.initWeb3();
-    },
-
-    /**
-     * This functions creates the connection eth-test ledger(either straight, or through MetaMask).
-     */
-    initWeb3: function () {
-
-        /*
-         * In case web3.js is injected by MetaMask, we have a bug, using TruffleContracts.
+        /**
+         * Weird hack, that turns `noodle-callback` function,
+         *  into promise.
          *
-         * More context here: https://github.com/trufflesuite/truffle-contract/issues/70
-         *
+         * It's really simple implementation, so it doesn't
+         *  work for functions with multiple parameters.
          */
-        App.isInjected = false;
+        promisify:
+                func =>
+                        options =>
+                            new Promise((resolve, reject) => {
+                                func(options, function cb(err, val) {
+                                    return err ? reject(err) : resolve(val);
+                                });
+                            }),
 
-        /* Is there an injected web3 instance, like one from MetaMask, we are going to use it. */
-        if (typeof web3 !== 'undefined') {
-            App.isInjected = true;
+        /* Represents the provider, that injected web3js instance. */
+        web3Provider: null,
 
-            App.web3Provider = web3.currentProvider;
-        } else {
-            // If no injected web3 instance is detected, fall back to Ganache.
-            App.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
-        }
-        // We use the latest version, so we need to write code like this.
-        this.web3 = new Web3(App.web3Provider);
+        /* List of attached contracts. */
+        contracts: {},
 
-        return App.isInjected? App.initContractsWeb3(): App.initContractsTruffle();
-    },
+        /* GameLogic logic object. Doesn't have any  */
+        gameLogic: null,
 
-    /**
-     * Get info(like ABI) from build contracts using Truffle, to simplify usage.
-     */
-    initContractsTruffle: function () {
-        console.log('Using Truffle contract-wrapper.');
-        /* We only need this one?, since it encapsulates all other methods. */
-        $.getJSON('build/contracts/StickGame.json', function (data) {
-            // Get the necessary contract artifact file and instantiate it with truffle-contract
-            App.contracts.StickGame = TruffleContract(data);
-
-            // Set the provider for our contract
-            App.contracts.StickGame.setProvider(App.web3Provider);
-
-            // Use our contract to retrieve and mark the adopted pets
-            // return App.markAdopted();
-        });
-
-        return App.bindEvents();
-    },
-
-    /**
-     * Get contract the hard way using Web3 js.
-     */
-    initContractsWeb3: function () {
-        console.log('We are falling back to naked Web3.js');
-        $.getJSON('build/contracts/StickGame.json', function (data) {
-
-            let networks = data["networks"];
-            let address = '';
-
-            for (let key in networks) {
-                if (networks.hasOwnProperty(key)) {
-                    address = networks[key]['address'];
-                    break;
-                }
-            }
-
-            App.contractAddress = address;
-
-            App.contracts.StickGame = TruffleContract(data);
-            App.contracts.StickGame.setProvider(App.web3Provider);
-
-            let contractArtifact = App.contracts.StickGame;
-            App.contracts.StickGame = web3.eth.contract(contractArtifact.abi);
-            App.contracts.StickGame = App.contracts.StickGame.at(App.contractAddress);
+        /**
+         * The entry point of our application.
+         */
+        init: function () {
 
             /*
-             * As soon as we get the contact, update the table
-             *  of open games once, without waiting for timer.
-             *
-             * Same goes for contract info.
+             * Currently we hard-code couple of parameters,
+             * since there is no really support for them, yet.
              */
-            App.getOpenGames();
-            $('#account-select').trigger('click');
+            App.gameWidth = 8;
+            App.gameHigth = 8;
+            App.numberOfPlayers = 2;
 
-            return App.bindGeneralPurposeEvents();
+            /* First, init the game logic object. */
 
-        });
+            App.gameLogic = new GameLogic({
 
-        return App.bindEvents();
-    },
+                /* Currently we don't support dynamic grid, and more than 2 players, but anyways. */
+                width: 8,
+                height: 8,
+                numPlayers: 2,
+                svgId: 'game-board',
+                application: App,
 
-    /**
-     * Bind DOM related event's, to their callbacks.
-     */
-    bindEvents: function () {
+            });
 
+            return App.initWeb3();
+        },
 
-        /* Represents input form. */
-        App.$gameToJoinTable = $('#opponents-table');
-
-        /* Start screen holder. */
-        App.$startScreen = $('div[data-role="start"]');
-        /* GameLogic screen holder. */
-        App.$gameScreen = $('div[data-role="game"]');
-        /* Wait screen holder. */
-        App.$waitScreen = $('div[data-role="wait"]');
-        /* WaitForGame screen holder. */
-        App.$waitForGameScreen = $('div[data-role="wait-for-game"]');
-
-        /* As of jQuery v1.8, such $(document).on( "ready", handler ) support has been deprecated. */
-        App.$gameToJoinTable.on('click', App.joinSomeGame);
-
-        $('#account-select').on('click', App.getMyAccounts);
-        $('#create-game').on('click', App.createNewGame);
-        $('#close-game').on('click', App.closeThisGame);
-        $('#surrender-game').on('click', App.surrenderThisGame);
-        $('#back-to-menu').on('click', App.cleanUpAndReturn);
-
-        /*
-         * We update the `Open Games` table each 5 seconds.
+        /**
+         * This functions creates the connection eth-test ledger(either straight, or through MetaMask).
          */
-        setInterval(App.getOpenGames, 5000)
+        initWeb3: function () {
 
-    },
+            /*
+             * In case web3.js is injected by MetaMask, we have a bug, using TruffleContracts.
+             *
+             * More context here: https://github.com/trufflesuite/truffle-contract/issues/70
+             *
+             */
+            App.isInjected = false;
 
-    /**
-     * Bind general purpose events, that are not related to any specific game.
-     */
-    bindGeneralPurposeEvents: function () {
+            /* Is there an injected web3 instance, like one from MetaMask, we are going to use it. */
+            if (typeof web3 !== 'undefined') {
+                App.isInjected = true;
 
-        let meta = App.contracts.StickGame;
+                App.web3Provider = web3.currentProvider;
+            } else {
+                // If no injected web3 instance is detected, fall back to Ganache.
+                App.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
+            }
+            // We use the latest version, so we need to write code like this.
+            this.web3 = new Web3(App.web3Provider);
 
-        /*
-         * When we get this event, everything we do, is we append
-         *  to list of open games, the id data we received, in case it wasn't there already.
+            return App.isInjected? App.initContractsWeb3(): App.initContractsTruffle();
+        },
+
+        /**
+         * Get info(like ABI) from build contracts using Truffle, to simplify usage.
          */
-        meta.GameInitialized()
-            .watch(
-                (err, logs) => {
-                    if (!err) {
-                        console.log('We got general game initialized event.');
-                        /* If there is no such game handle already, append it to. */
-                        if (App.$gameToJoinTable.find(`tr[data-value="${logs.args['gameId']}"]`).length === 0) {
-                            App.$gameToJoinTable
-                                .find('> tbody')
-                                .append($('<tr>')
-                                    .append(
-                                        [
-                                            logs.args['player1Alias'],
-                                            logs.args['boardSizeX'],
-                                            logs.args['boardSizeY'],
-                                            logs.args['numberOfPlayers'],
-                                            logs.args['player1MovesFirst'],
-                                        ].map(
-                                            (field) =>
-                                                $('<td>')
-                                                    .append(
-                                                        typeof field === "string" ?
-                                                            web3.toAscii(field)
-                                                            : typeof field === "boolean" ?
-                                                            field ?
-                                                                "Game creator moves first."
-                                                                : "Joining player will move first."
-                                                            : field.c[0]
-                                                    )
-                                        )
-                                    )
-                                    .attr('data-value', logs.args['gameId'])
-                                );
-                            console.log('Adding ' + logs.toString());
-                        } else {
-                            console.log('Not adding ' + logs.toString());
-                        }
-                    } else {
-                        console.log("Some error occurred, while processing GameInitialized event.");
-                        console.log(err.toString());
+        initContractsTruffle: function () {
+            console.log('Using Truffle contract-wrapper.');
+            /* We only need this one?, since it encapsulates all other methods. */
+            $.getJSON('build/contracts/StickGame.json', function (data) {
+                // Get the necessary contract artifact file and instantiate it with truffle-contract
+                App.contracts.StickGame = TruffleContract(data);
+
+                // Set the provider for our contract
+                App.contracts.StickGame.setProvider(App.web3Provider);
+
+                // Use our contract to retrieve and mark the adopted pets
+                // return App.markAdopted();
+            });
+
+            return App.bindEvents();
+        },
+
+        /**
+         * Get contract the hard way using Web3 js.
+         */
+        initContractsWeb3: function () {
+            console.log('We are falling back to naked Web3.js');
+            $.getJSON('build/contracts/StickGame.json', function (data) {
+
+                let networks = data["networks"];
+                let address = '';
+
+                for (let key in networks) {
+                    if (networks.hasOwnProperty(key)) {
+                        address = networks[key]['address'];
+                        break;
                     }
                 }
-            );
 
-        meta.GameClosed()
-            .watch(
-                (err, logs) => {
-                    if (!err) {
-                        App.$gameToJoinTable.find(`tr[data-value="${logs.args['gameId']}"]`).remove();
+                App.contractAddress = address;
 
-                        console.log('Removing from table ' + logs.toString());
-                    } else {
-                        console.log("Some error occurred, while processing GameClosed event.");
-                        console.log(err.toString());
-                    }
-                }
-            );
-    },
+                App.contracts.StickGame = TruffleContract(data);
+                App.contracts.StickGame.setProvider(App.web3Provider);
 
-    /**
-     * Bind game events, whose content is related to one game.
-     *
-     * isForeignGame - represents, if this game is the one we created, or if we join a game.
-     */
-    bindGameSpecificEvents: function (isForeignGame ) {
-        /*
-         * This events, are a little `different`, from previous ones.
-         *  We don't need all of them, so we attach filters on top of them.
+                let contractArtifact = App.contracts.StickGame;
+                App.contracts.StickGame = web3.eth.contract(contractArtifact.abi);
+                App.contracts.StickGame = App.contracts.StickGame.at(App.contractAddress);
+
+                /*
+                 * As soon as we get the contact, update the table
+                 *  of open games once, without waiting for timer.
+                 *
+                 * Same goes for contract info.
+                 */
+                App.getOpenGames();
+                $('#account-select').trigger('click');
+
+                return App.bindGeneralPurposeEvents();
+
+            });
+
+            return App.bindEvents();
+        },
+
+        /**
+         * Bind DOM related event's, to their callbacks.
          */
+        bindEvents: function () {
 
-        let meta = App.contracts.StickGame;
 
-        /*
-         * If we joined a game, we don't need this logic.
-         *
-         * Actually this is a quick fix, need to repair it later.
+            /* Represents input form. */
+            App.$gameToJoinTable = $('#opponents-table');
+
+            /* Start screen holder. */
+            App.$startScreen = $('div[data-role="start"]');
+            /* GameLogic screen holder. */
+            App.$gameScreen = $('div[data-role="game"]');
+            /* Wait screen holder. */
+            App.$waitScreen = $('div[data-role="wait"]');
+            /* WaitForGame screen holder. */
+            App.$waitForGameScreen = $('div[data-role="wait-for-game"]');
+
+            /* As of jQuery v1.8, such $(document).on( "ready", handler ) support has been deprecated. */
+            App.$gameToJoinTable.on('click', App.joinSomeGame);
+
+            $('#account-select').on('click', App.getMyAccounts);
+            $('#create-game').on('click', App.createNewGame);
+            $('#close-game').on('click', App.closeThisGame);
+            $('#surrender-game').on('click', App.surrenderThisGame);
+            $('#back-to-menu').on('click', App.cleanUpAndReturn);
+
+            /*
+             * We update the `Open Games` table each 5 seconds.
+             */
+            setInterval(App.getOpenGames, 5000)
+
+        },
+
+        /**
+         * Bind general purpose events, that are not related to any specific game.
          */
-        if (!isForeignGame) {
-            let ourGameJoinFilter = meta.GameJoined(
-                {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
-            );
+        bindGeneralPurposeEvents: function () {
 
-            ourGameJoinFilter
+            let meta = App.contracts.StickGame;
+
+            /*
+             * When we get this event, everything we do, is we append
+             *  to list of open games, the id data we received, in case it wasn't there already.
+             */
+            meta.GameInitialized()
                 .watch(
                     (err, logs) => {
                         if (!err) {
-                            /* First, extract the missing data, to start the game. */
-
-                            App.enemyName = web3.toAscii(logs.args['player2Alias']);
-
-                            /* Finally, set the game running, and present it onto the screen. */
-                            App.gameLogic.start(App.buildGameInfo());
-
-                            App.$waitForGameScreen.hide();
-                            App.$gameScreen.show();
-                            ourGameJoinFilter.stopWatching();
-
+                            console.log('We got general game initialized event.');
+                            /* If there is no such game handle already, append it to. */
+                            if (App.$gameToJoinTable.find(`tr[data-value="${logs.args['gameId']}"]`).length === 0) {
+                                App.$gameToJoinTable
+                                    .find('> tbody')
+                                    .append($('<tr>')
+                                        .append(
+                                            [
+                                                logs.args['player1Alias'],
+                                                logs.args['boardSizeX'],
+                                                logs.args['boardSizeY'],
+                                                logs.args['numberOfPlayers'],
+                                                logs.args['player1MovesFirst'],
+                                            ].map(
+                                                (field) =>
+                                                    $('<td>')
+                                                        .append(
+                                                            typeof field === "string" ?
+                                                                web3.toAscii(field)
+                                                                : typeof field === "boolean" ?
+                                                                field ?
+                                                                    "Game creator moves first."
+                                                                    : "Joining player will move first."
+                                                                : field.c[0]
+                                                        )
+                                            )
+                                        )
+                                        .attr('data-value', logs.args['gameId'])
+                                    );
+                                console.log('Adding ' + logs.toString());
+                            } else {
+                                console.log('Not adding ' + logs.toString());
+                            }
                         } else {
-                            console.log("Some error occurred, while processing GameJoined event.");
+                            console.log("Some error occurred, while processing GameInitialized event.");
                             console.log(err.toString());
                         }
                     }
                 );
-        }
 
-        let ourGameEndedFilter = meta.GameEnded(
-            {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
-        );
-        let ourGameMoveFilter = meta.GameMove(
-            {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
-        );
+            meta.GameClosed()
+                .watch(
+                    (err, logs) => {
+                        if (!err) {
+                            App.$gameToJoinTable.find(`tr[data-value="${logs.args['gameId']}"]`).remove();
 
-        ourGameEndedFilter
-            .watch(
-                (err, logs) => {
-                    if (!err) {
-
-                        /*
-                         * If we are here, somebody either surrendered, or the game come to it's logical
-                         *  end. In any case just process this fact.
-                         */
-
-                        App.gameLogic.announceWinner(web3.toAscii(logs.args['player']), logs.args['isATie']);
-                        ourGameEndedFilter.stopWatching();
-                        /* After receiving `GameEnd` event, we also stop watching for movements events. */
-                        ourGameMoveFilter.stopWatching();
-
-                    } else {
-                        console.log("Some error occurred, while processing GameEnded event.");
-                        console.log(err.toString());
+                            console.log('Removing from table ' + logs.toString());
+                        } else {
+                            console.log("Some error occurred, while processing GameClosed event.");
+                            console.log(err.toString());
+                        }
                     }
-                }
+                );
+        },
+
+        /**
+         * Bind game events, whose content is related to one game.
+         *
+         * isForeignGame - represents, if this game is the one we created, or if we join a game.
+         */
+        bindGameSpecificEvents: function (isForeignGame ) {
+            /*
+             * This events, are a little `different`, from previous ones.
+             *  We don't need all of them, so we attach filters on top of them.
+             */
+
+            let meta = App.contracts.StickGame;
+
+            /*
+             * If we joined a game, we don't need this logic.
+             *
+             * Actually this is a quick fix, need to repair it later.
+             */
+            if (!isForeignGame) {
+                let ourGameJoinFilter = meta.GameJoined(
+                    {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
+                );
+
+                ourGameJoinFilter
+                    .watch(
+                        (err, logs) => {
+                            if (!err) {
+                                /* First, extract the missing data, to start the game. */
+
+                                App.enemyName = web3.toAscii(logs.args['player2Alias']);
+
+                                /* Finally, set the game running, and present it onto the screen. */
+                                App.gameLogic.start(App.buildGameInfo());
+
+                                App.$waitForGameScreen.hide();
+                                App.$gameScreen.show();
+                                ourGameJoinFilter.stopWatching();
+
+                            } else {
+                                console.log("Some error occurred, while processing GameJoined event.");
+                                console.log(err.toString());
+                            }
+                        }
+                    );
+            }
+
+            let ourGameEndedFilter = meta.GameEnded(
+                {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
+            );
+            let ourGameMoveFilter = meta.GameMove(
+                {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
             );
 
-        ourGameMoveFilter
-            .watch(
-                (err, logs) => {
-                    if (!err) {
+            ourGameEndedFilter
+                .watch(
+                    (err, logs) => {
+                        if (!err) {
 
+                            /*
+                             * If we are here, somebody either surrendered, or the game come to it's logical
+                             *  end. In any case just process this fact.
+                             */
+
+                            App.gameLogic.announceWinner(web3.toAscii(logs.args['winnerName']), logs.args['isATie']);
+                            ourGameEndedFilter.stopWatching();
+                            /* After receiving `GameEnd` event, we also stop watching for movements events. */
+                            ourGameMoveFilter.stopWatching();
+
+                        } else {
+                            console.log("Some error occurred, while processing GameEnded event.");
+                            console.log(err.toString());
+                        }
+                    }
+                );
+
+            let handledTxs = new Set();
+
+            ourGameMoveFilter
+                .watch(
+                    (err, logs) => {
+                        if (handledTxs.has(logs.transactionHash)) return;
+                        if (!err) {
                         /*
                          * Everything is simple. We only process the draw calls, that are given to us.
                          *  Since all logic is on Smart-Contract -> parse parameters and
                          *  make a draw call.
                          */
-                        //     :field.c[0]
-                        console.log(logs.args['xIndex1']);
-                        App.GameLogic.drawLine(
-                            [logs.args['xIndex1'], logs.args['xIndex2']],
-                            [logs.args['yIndex1'], logs.args['yIndex2']],
+                        console.log('logs:', logs);
+                        App.gameLogic.drawLine(
+                            [logs.args['xIndex1'].c[0], logs.args['yIndex1'].c[0]],
+                            [logs.args['xIndex2'].c[0], logs.args['yIndex2'].c[0]],
                             web3.toAscii(logs.args['playerAlias']),
                             logs.args['continueMovement']
                         );
-
+                        handledTxs.add(logs.transactionHash);
                     } else {
                         console.log("Some error occurred, while processing GameMove event.");
                         console.log(err.toString());
@@ -401,7 +402,7 @@ App = {
         meta.getOpenGameIds.call(function (error, listOfOpenGames) {
 
             if (error) {
-                $(event.target).setContent("Some problem occurred while loading addresses.");
+                Alert.warning("Some problem occurred while loading addresses.");
                 console.log(error);
             }
 
@@ -721,7 +722,7 @@ App = {
 
         let meta = App.contracts.StickGame;
 
-        meta.makeMove(App.currentGameId, xCoord1, yCoord1, xCoord2, yCoord2, (err, currentTransactionHash) => {
+        meta.makeMove(App.currentGameId, xCoord1, yCoord1, xCoord2, yCoord2, (err, ) => {
 
             if (err) {
                 Alert.warning("Big error", 'Some internal problem occurred while sending move information.');

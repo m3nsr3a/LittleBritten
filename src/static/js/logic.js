@@ -193,6 +193,8 @@ class GameLogic {
          */
 
         this.possilbeClaim = lineObject;
+        console.log('We are claiming this line.');
+        console.log(this.possilbeClaim);
         this.options.application.makeSomeMove(
             lineObject.vertex1.x, lineObject.vertex1.y,
             lineObject.vertex2.x, lineObject.vertex2.y,
@@ -218,10 +220,14 @@ class GameLogic {
      *  - It it was our move -> continue, where we left.
      */
     drawLine(vertex1, vertex2, moveOwner, hadScored) {
-
+        console.log(vertex1);
+        console.log(vertex2);
+        console.log(moveOwner);
+        console.log(this.curPlayerObject.name);
         /* Get the line, we are trying to draw by the coordinate. */
         let line = this.renderer.getLine(vertex1, vertex2);
-
+        console.log(line);
+        console.log(hadScored);
         if (!line.owner) {
 
             /*
@@ -234,6 +240,7 @@ class GameLogic {
 
             if (this.possilbeClaim != null) {
                 /* 1 and 3 goes here. */
+                console.log(this.possilbeClaim);
 
                 if (this.curPlayerObject.name === moveOwner) {
                     /*
@@ -251,7 +258,8 @@ class GameLogic {
 
                     } else {
                         console.log('Looks like something strange had happened.');
-                        console.log('Line ' + vertex1.toString() + '-' + vertex2.toString());
+                        console.log('Line came: ' + vertex1.toString() + '-' + vertex2.toString());
+                        console.log('Line claimed: ' + this.possilbeClaim.toString());
                         return;
                     }
                 } else {
@@ -290,7 +298,7 @@ class GameLogic {
         }
 
         let score = this.checkBoxes(line);
-
+        console.log('The current player score for this move is: ' + score);
         if (score > 0) {
 
             this._occupiedSquares += score;

@@ -327,7 +327,7 @@ footer p a {
 .more-link {
     left: calc(50% - 100px);
     position: absolute;
-    top: 30%;
+    top: 100%;
     user-select: none;
 }
 

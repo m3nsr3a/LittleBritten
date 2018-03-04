@@ -225,7 +225,11 @@ class Renderer {
             return null;
         }
 
-        let lineDOM = document.getElementById('line-' + coord1[0] + '-' + coord1[1] + '-' + coord2[0] + '-' + coord2[1]);
+        let lineDOM = document.getElementById(
+            'line-' + coord1[0].toString() + '-' + coord1[1].toString() +
+            '-' + coord2[0].toString() + '-' + coord2[1].toString()
+        );
+
         return !lineDOM ? null : this.lines[parseInt(lineDOM.getAttribute('data-index'))];
     }
 

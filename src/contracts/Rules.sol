@@ -39,8 +39,21 @@ library Rules {
         /* Is true, if */
         bool isFirstPlayer;
 
-        /* Hold the information about the game. */
-        mapping(uint8 => mapping(uint8 => Field)) fast_fields;
+        /*
+         * Hold the information about the game.
+         *  I'm going to store info like this.
+         *  Not sure, if it's `optimal` in any way(_but who cares_).
+         *
+         *  00-01-02
+         *  || || ||
+         *  10-11-12
+         *  || || ||
+         *  20-21-22
+         *
+         *  -1 if player1, +1 if player2, 0 if empty.
+         *
+         */
+        mapping(uint8 => mapping(uint8 => mapping(uint8 => mapping(uint8 => int8)))) fast_fields;
 
         /* Players' score info. */
         uint8 player1Score;
@@ -50,11 +63,11 @@ library Rules {
     /*
      * Useful enum, for initial field filling.
      */
-    enum Direction {
-        UP,         //  [1, 0, 0, 0]
-        RIGHT,      //  [0, 1, 0, 0]
-        DOWN,       //  [0, 0, 1, 0]
-        LEFT        //  [0, 0, 0, 1]
+    enum Direction {//   x,  y
+        UP,         // [ 0,  1 ]
+        RIGHT,      // [ 1,  0 ]
+        DOWN,       // [ 0, -1 ]
+        LEFT        // [-1,  0 ]
     }
 
 
@@ -62,14 +75,13 @@ library Rules {
 
 
     /**
-     * Validates if a move is technically (not legally) possible,
-     * i.e. if piece is capable to move this way
+     * Validates if a move is technically possible.
      *
-     * @param State self - Reference to current state object.
-     * @param uint8 xIndex1 - The x coordinate of first vertex on the game grid.
-     * @param uint8 yIndex1 - The y coordinate of first vertex on the game grid.
-     * @param uint8 xIndex2 - The x coordinate of second vertex on the game grid.
-     * @param uint8 yIndex2 - The y coordinate of second vertex on the game grid.
+     * @param self - Reference to current state object.
+     * @param xIndex1 - The x coordinate of first vertex on the game grid.
+     * @param yIndex1 - The y coordinate of first vertex on the game grid.
+     * @param xIndex2 - The x coordinate of second vertex on the game grid.
+     * @param yIndex2 - The y coordinate of second vertex on the game grid.
      */
     function checkMove(
         State storage self,
@@ -77,53 +89,76 @@ library Rules {
         uint8 xIndex2, uint8 yIndex2
     ) internal view {
 
-
-        bool currentPlayerColor;
-
-        if (isFirstPlayer) {
-            currentPlayerColor = Players(Player.RED);
-        } else {
-            currentPlayerColor = Players(Player.GREEN);
-        }
-
         /* First, check that move is within the field. */
         require(
-            xIndex > self.xMapMaxSize ||
-            xIndex < 0                ||
-            yIndex > self.yMapMaxSize ||
-            yIndex < 0
+            xIndex1 <  self.xMapMaxSize &&
+            xIndex1 >= 0                &&
+            xIndex2 <  self.xMapMaxSize &&
+            xIndex2 >= 0                &&
+            yIndex1 <  self.yMapMaxSize &&
+            yIndex1 >= 0                &&
+            yIndex2 <  self.yMapMaxSize &&
+            yIndex2 >= 0
         );
+
+        /* Then confirm, that there is such vertex at all. */
+//        uint8[4][2] a = AllDirections();
+//        uint8[4][2] memory b = new uint8[4][2]();
+//        for (uint8 idx = 0; idx < 4; idx++) {
+//            (c,d) = a[idx];
+//            c += xIndex1;
+//            d += yIndex1;
+//            b[idx] = [c, d];
+//        }
+//
+//        require(
+//            b[0] == []
+//        )
+//
+//        require(
+//            xIndex1 <  self.xMapMaxSize &&
+//            xIndex1 >= 0                &&
+//            xIndex2 <  self.xMapMaxSize &&
+//            xIndex2 >= 0                &&
+//            yIndex1 <  self.yMapMaxSize &&
+//            yIndex1 >= 0                &&
+//            yIndex2 <  self.yMapMaxSize &&
+//            yIndex2 >= 0
+//        );
 
         /* This should never happen... */
         require(self.yMapMaxSize * self.xMapMaxSize < self.occupiedLines);
 
-        /* Then check, that we don't step on already marked field. */
-        require(self.fast_fields[xIndex][yIndex].flag == true);
+        /* Finally check, that we don't step on already marked field. */
+        require(self.fast_fields[xIndex1][yIndex1][xIndex2][yIndex2] == 0);
     }
 
 
     /*
      *
      *
-     * @param State self - Reference to current state object.
-     * @param uint8 xIndex1 - The x coordinate of first vertex on the game grid.
-     * @param uint8 yIndex1 - The y coordinate of first vertex on the game grid.
-     * @param uint8 xIndex2 - The x coordinate of second vertex on the game grid.
-     * @param uint8 yIndex2 - The y coordinate of second vertex on the game grid.
+     * @param self - Reference to current state object.
+     * @param xIndex1 - The x coordinate of first vertex on the game grid.
+     * @param yIndex1 - The y coordinate of first vertex on the game grid.
+     * @param xIndex2 - The x coordinate of second vertex on the game grid.
+     * @param yIndex2 - The y coordinate of second vertex on the game grid.
+     * @param isFirstPlayer - will be true, if step is done by first player.
      */
     function makeMove(
         State storage self,
         uint8 xIndex1, uint8 yIndex1,
         uint8 xIndex2, uint8 yIndex2,
-        bool currentPlayerColor
-    ) internal {
+        bool isFirstPlayer
+    ) internal returns (uint8) {
 
-        self.fast_fields[xIndex][yIndex].flag = true;
-        self.fast_fields[xIndex][yIndex].isRed = currentPlayerColor;
+        if (isFirstPlayer) {
+            self.fast_fields[xIndex1][yIndex1][xIndex2][yIndex2] == 1;
+        } else {
+            self.fast_fields[xIndex1][yIndex1][xIndex2][yIndex2] == 2;
+        }
 
         /* We store fields, in the row-like fashion. */
-        self.state[yIndex * self.xMapMaxSize + xIndex] = -1;
-
+//        self.state[yIndex * self.xMapMaxSize + xIndex] = -1;
         /* Decrease number of available fields. */
         self.occupiedLines--;
     }
@@ -131,9 +166,9 @@ library Rules {
     /*
      * Return total number of moves made, i.e. how many lines was placed.
      *
-     * @param State self - Reference to current state object.
+     * @param self - Reference to current state object.
      *
-     * @returns uint8 numberOfOccupiedLines - Number of placed lines.
+     * @returns numberOfOccupiedLines - Number of placed lines.
      */
     function getNumberOfMovesMade(State storage self) internal view returns (uint8 numberOfOccupiedLines) {
         return self.occupiedLines;
@@ -142,20 +177,24 @@ library Rules {
     /*
      * By given two vertices coordinates, return true if there is line between them.
      *
-     * @param State self - Reference to current state object.
-     * @param uint8 xIndex1 - The x coordinate of first vertex on the game grid.
-     * @param uint8 yIndex1 - The y coordinate of first vertex on the game grid.
-     * @param uint8 xIndex2 - The x coordinate of second vertex on the game grid.
-     * @param uint8 yIndex2 - The y coordinate of second vertex on the game grid.
+     * @param self - Reference to current state object.
+     * @param xIndex1 - The x coordinate of first vertex on the game grid.
+     * @param yIndex1 - The y coordinate of first vertex on the game grid.
+     * @param xIndex2 - The x coordinate of second vertex on the game grid.
+     * @param yIndex2 - The y coordinate of second vertex on the game grid.
      *
-     * @returns bool fag - Will be true, if there is line between two given vertices, otherwise false.
+     * @returns fag - Will be true, if there is line between two given vertices, otherwise false.
      */
     function getStateByIndex(
         State storage self,
         uint8 xIndex1, uint8 yIndex1,
         uint8 xIndex2, uint8 yIndex2
     ) internal view returns (bool flag) {
-
+        if (self.fast_fields[xIndex1][yIndex1][xIndex2][yIndex2] != 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
@@ -163,9 +202,9 @@ library Rules {
      * This function, says, who won in the game.
      *  Note, that the draw, is also possible.
      *
-     * @param bytes32 gameId - The Id of a game, where to find winner.
+     * @param gameId - The Id of a game, where to find winner.
      *
-     * @returns int choice - `-1` if player1 is the winner, `1` if player2, and `0` in case of a draw.
+     * @returns choice - `-1` if player1 is the winner, `1` if player2, and `0` in case of a draw.
      */
     function determineWinner(State storage self) internal view returns (int8 choice) {
         if (self.player1Score < self.player2Score) {
@@ -180,23 +219,31 @@ library Rules {
 
     /* Helper library functions. */
 
+    function AllDirections() internal pure returns (int8[2][4]) {
+        return [
+            Directions(Direction.UP),
+            Directions(Direction.RIGHT),
+            Directions(Direction.LEFT),
+            Directions(Direction.DOWN)
+        ];
+    }
+
     /*
      * Helper function, to get base Field
      *
-     * @param Direction d -
+     * @param d -
      *
-     * @returns uint8[4]
+     * @returns uint8[2]
      */
-    function Directions(Direction d) internal pure returns (uint8[4]) {
-
+    function Directions(Direction d) internal pure returns (int8[2]) {
         if (d == Direction.UP) {
-            return [1, 0, 0, 0];
+            return [ int8(0),  int8(1) ];
         } else if (d == Direction.RIGHT) {
-            return [0, 1, 0, 0];
+            return [ int8(1), int8(0) ];
         } else if (d == Direction.DOWN) {
-            return [0, 0, 1, 0];
+            return [int8(0), int8(-1) ];
         } else if (d == Direction.LEFT) {
-            return [0, 0, 0, 1];
+            return [int8(-1),  int8(0) ];
         }
     }
 }
