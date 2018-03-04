@@ -52,20 +52,16 @@ contract StickGame is TwoPlayerGame {
 
     /*
      * Is triggered when somebody joins the game.
-     * Somebody must be some different person that player1(player2 != player1).
+     *  Somebody must be some different person that player1(player2 != player1). //ToDo: fix it.
      *
      * bytes32 gameId - The ID of the created game.
-     * address player1 - Address of the player, that created the game.
-     * string player1Alias - NickName of the player that created the game.
      * address player2 - The ID of the person, who joined the game.
-     * string player2Alias - NickName of the player, who joined the game.
-     * bool player1MovesFirst - Is going to be true, if player1 is moving first, otherwise false.
+     * bytes32 player2Alias - NickName of the player, who joined the game.
      */
     event GameJoined(
         bytes32 indexed gameId,
-        address indexed player1, string player1Alias,
-        address indexed player2, string player2Alias,
-        bool player1MovesFirst
+        address indexed player2,
+        bytes32 player2Alias
     );
 
     /*
@@ -90,7 +86,7 @@ contract StickGame is TwoPlayerGame {
      * This event is triggered, when the game had ended.
      *
      * bytes32 gameId - id of the game, that had ended.
-     * address player - address of the player, that won the game.
+     * address player - Address of the player, that won the game.
      */
     event GameEnded(bytes32 indexed gameId, address indexed player);
 
@@ -130,7 +126,7 @@ contract StickGame is TwoPlayerGame {
     function initGame(
         string player1Alias, uint8 boardSizeX,
         uint8 boardSizeY, uint8 numberOfPlayers
-    ) public returns (bytes32) {
+    ) public {
 
         /*
          * User, who created a game, is randomly assigned, if he is going to move first or second.
@@ -162,35 +158,6 @@ contract StickGame is TwoPlayerGame {
             numberOfPlayers,
             gameStatesById[gameId].isFirstPlayer
         );
-
-        return gameId;
-    }
-
-    /*
-     * Join an initialized, and open game. Then notify everyone.
-     *
-     * bytes32 gameId - ID of the game to join.
-     * string player2Alias - NickName of the player that wants to join the game.
-     */
-    function joinGame(bytes32 gameId, string player2Alias) notEnded(gameId) public {
-        /*
-         * Here, we try to join a game. We may fail, for some reasons.
-         * However, if we manage to do it, game is going to be removed from public access.
-         */
-        super.joinGame(gameId, player2Alias);
-
-        /* If no next player is us -> highlight this info in game state. */
-        if (gamesById[gameId].nextPlayer == msg.sender) {
-            gameStatesById[gameId].firstPlayer   = msg.sender;
-            gameStatesById[gameId].isFirstPlayer = false;
-        }
-
-        GameJoined(
-            gameId,
-            gamesById[gameId].player1, gamesById[gameId].player1Alias,
-            msg.sender, player2Alias,
-            gameStatesById[gameId].isFirstPlayer
-        );
     }
 
     /*
@@ -198,10 +165,41 @@ contract StickGame is TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game to join.
      */
-    function closeGame(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) public {
+    function closeGame(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) notClosed(gameId) public {
         _closeGame(gameId);
 
         GameClosed(gameId, msg.sender);
+    }
+
+    /*
+     * Join an initialized, open game. Then notify everyone.
+     *
+     * bytes32 gameId - ID of the game to join.
+     * string player2Alias - NickName of the player that wants to join the game.
+     */
+    function joinGame(bytes32 gameId, string player2Alias) notEnded(gameId) notClosed(gameId) public {
+        /*
+         * Here, we try to join a game. We may fail, for some reasons.
+         * However, if we manage to do it, game is going to be removed from public access.
+         */
+        _joinGame(gameId, player2Alias);
+
+        /* If next player is us -> highlight this info in game state. */
+        if (gamesById[gameId].nextPlayer == msg.sender) {
+            gameStatesById[gameId].firstPlayer   = msg.sender;
+            gameStatesById[gameId].isFirstPlayer = false;
+        }
+
+        GameClosed(
+            gameId,
+            msg.sender
+        );
+
+        GameJoined(
+            gameId,
+            msg.sender,
+            stringToBytes32(player2Alias)
+        );
     }
 
     /*
@@ -210,7 +208,7 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - Id of a game, in which sender want to surrender.
      */
     function surrender(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) public {
-        super.surrender(gameId);
+        _surrender(gameId);
 
         GameEnded(gameId, gamesById[gameId].winner);
     }
@@ -237,21 +235,35 @@ contract StickGame is TwoPlayerGame {
         GameMove(gameId, msg.sender, xIndex, yIndex);
 
         if (gameStatesById[gameId].occupiedLines == 0) {
-            this.finishGame(gameId);
+
+            _finishGame(gameId, 1);
+
+            GameEnded(gameId, gamesById[gameId].winner);
         }
-    }
-
-    function finishGame(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) public {
-
-        super.finishGame(gameId, determineWin(gameId));
-
-        GameEnded(gameId, gamesById[gameId].winner);
     }
 
 
     /*
      * Helper public functions.
      */
+
+
+    /*
+     * Reruns all info about one game by it's id.
+     *
+     * bytes32 gameId - ID of the game, to get data from.
+     */
+    function getGameInfo(bytes32 gameId) public view returns (bytes32, bytes32, uint8, uint8, uint8, bool) {
+        Game memory game = gamesById[gameId];
+        return (
+            stringToBytes32(game.player1Alias),
+            stringToBytes32(game.player2Alias),
+            game.sizeX,
+            game.sizeY,
+            game.numberOfPlayers,
+            gameStatesById[gameId].isFirstPlayer
+        );
+    }
 
 
     /*
@@ -346,6 +358,16 @@ contract StickGame is TwoPlayerGame {
      */
     modifier notEnded(bytes32 gameId) {
         require(!gamesById[gameId].isEnded);
+        _;
+    }
+
+    /*
+     * Will throw, if game is closed for new connections;
+     *
+     * bytes32 gameId - ID of the game to check.
+     */
+    modifier notClosed(bytes32 gameId) {
+        require(!gamesById[gameId].isClosed);
         _;
     }
 }

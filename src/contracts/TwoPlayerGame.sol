@@ -50,6 +50,9 @@ contract TwoPlayerGame {
         /* True, if the game have ended. */
         bool isEnded;
 
+        /* Is true, when the game is not searchable anymore. */
+        bool isClosed;
+
         /* If the game have ended, the game have a winner -> stores winner address. */
         address winner;
     }
@@ -101,6 +104,7 @@ contract TwoPlayerGame {
         require(numberOfPlayers >= 2);
 
         gamesById[gameId].isEnded = false;
+        gamesById[gameId].isClosed = false;
         gamesById[gameId].sizeX = boardSizeX;
         gamesById[gameId].sizeY = boardSizeY;
         gamesById[gameId].numberOfPlayers = numberOfPlayers;
@@ -108,6 +112,7 @@ contract TwoPlayerGame {
         /* Set info about first player. */
         gamesById[gameId].player1 = msg.sender;
         gamesById[gameId].player1Alias = player1Alias;
+
         if (isFirst == true) {
             gamesById[gameId].nextPlayer = msg.sender;
         }
@@ -128,14 +133,16 @@ contract TwoPlayerGame {
         /* Get the Game object from global mapping. */
         Game storage game = gamesById[gameId];
 
-        /* Game was started, however is not yet finished, and second player haven't connected yet. */
-        require(game.player2 == 0 && !game.isEnded);
+        /* Game was started, however second player haven't connected yet. */
+        require(game.player2 == 0);
 
-        /* Game can be closed only by involved players. */
+        /* Game can be closed only by involved player. */
         require(msg.sender == game.player1);
 
         /* If game was open -> close it. */
         removeGameFromOpenGames(gameId);
+
+        game.isClosed = true;
     }
 
     /*
@@ -144,46 +151,24 @@ contract TwoPlayerGame {
      * bytes32 gameId - ID of the game to join.
      * string player2Alias - NickName of the player that wants to join the game.
      */
-    function joinGame(bytes32 gameId, string player2Alias) public {
+    function _joinGame(bytes32 gameId, string player2Alias) internal {
+        /* Get the Game object from global mapping. */
+        Game storage game = gamesById[gameId];
 
         /* First, check that game does't already have a second player. */
-        require(gamesById[gameId].player2 != 0);
+        require(game.player2 == 0);
 
         /* Then set the game details. */
-        gamesById[gameId].player2 = msg.sender;
-        gamesById[gameId].player2Alias = player2Alias;
-        if (gamesById[gameId].nextPlayer == 0) {
-            gamesById[gameId].nextPlayer = msg.sender;
+        game.player2 = msg.sender;
+        game.player2Alias = player2Alias;
+        if (game.nextPlayer == 0) {
+            game.nextPlayer = msg.sender;
         }
 
         /* Close game, since second player arrived -> remove from openGamesById. */
         removeGameFromOpenGames(gameId);
-    }
 
-    function finishGame(bytes32 gameId, int8 winChoice) public {
-
-        /* First, check, that there are two players in the game. */
-        require(
-            (gamesById[gameId].player1 != 0) && (gamesById[gameId].player2 != 0)
-        );
-
-        /* Set up, the winner. */
-        if (winChoice == 1) {
-            /* player1 won. */
-            gamesById[gameId].winner = gamesById[gameId].player1;
-        } else if (winChoice == 1) {
-            /* player2 won. */
-            gamesById[gameId].winner = gamesById[gameId].player2;
-        } else if (winChoice == 0) {
-            /* No winner. */
-            gamesById[gameId].winner = 0;
-        } else {
-            /* Strange state -> trow some error. */
-            revert();
-        }
-
-        /* Mark, that the game had ended. */
-        gamesById[gameId].isEnded = true;
+        game.isClosed = true;
     }
 
     /*
@@ -191,30 +176,65 @@ contract TwoPlayerGame {
      *
      * bytes32 gameId - Id of a game, in which sender want to surrender.
      */
-    function surrender(bytes32 gameId) public {
+    function _surrender(bytes32 gameId) internal {
+        /* Get the Game object from global mapping. */
+        Game storage game = gamesById[gameId];
 
         /* First, check, that there are two players in the game. */
         require(
-            (gamesById[gameId].player1 != 0) && (gamesById[gameId].player2 != 0)
+            (game.player1 != 0) && (game.player2 != 0)
         );
 
+        /* The game must be already closed new players. */
+        require(game.isClosed);
+
         /* If game have already ended -> trow. */
-        require(gamesById[gameId].winner != 0);
+        require(game.winner != 0);
 
         /* Set up, the winner and loser. */
-        if (gamesById[gameId].player1 == msg.sender) {
+        if (game.player1 == msg.sender) {
             /* player1 surrendered -> player2 won. */
-            gamesById[gameId].winner = gamesById[gameId].player2;
-        } else if(gamesById[gameId].player2 == msg.sender) {
+            game.winner = game.player2;
+        } else if(game.player2 == msg.sender) {
             /* player2 surrendered -> player1 won. */
-            gamesById[gameId].winner = gamesById[gameId].player1;
+            game.winner = game.player1;
         } else {
             /* Sender is'n related to this game. */
             revert();
         }
 
         /* Mark, that the game had ended. */
-        gamesById[gameId].isEnded = true;
+        game.isEnded = true;
+    }
+
+    /*
+     * This function is called, when we already had determined the logical winner,
+     *  i.e. that the game came to it's logical end(no more moves).
+     *
+     * bytes32 gameId - Id of a game, in where last move have been made.
+     * int8 winChoice - //ToDo: this needs fixing.
+     */
+    function _finishGame(bytes32 gameId, int8 winChoice) internal {
+        /* Get the Game object from global mapping. */
+        Game storage game = gamesById[gameId];
+
+        /* Set up, the winner. */
+        if (winChoice == 1) {
+            /* player1 won. */
+            game.winner = game.player1;
+        } else if (winChoice == 1) {
+            /* player2 won. */
+            game.winner = game.player2;
+        } else if (winChoice == 0) {
+            /* No winner. */
+            game.winner = 0;
+        } else {
+            /* Strange state -> trow some error. */
+            revert();
+        }
+
+        /* Mark, that the game had ended. */
+        game.isEnded = true;
     }
 
     /*
@@ -314,7 +334,7 @@ contract TwoPlayerGame {
             gameSizesY[i] = gamesById[currentGameId].sizeY;
             gamePlayerNames[i] = stringToBytes32(gamesById[currentGameId].player1Alias);
             gameNumberOfPlayers[i] = gamesById[currentGameId].numberOfPlayers;
-            gameWeMoveFirst[i] = gamesById[currentGameId].nextPlayer == 0? true: false;
+            gameWeMoveFirst[i] = gamesById[currentGameId].nextPlayer == 0? false: true;
             currentGameId = openGamesById[currentGameId];
         }
 
@@ -326,7 +346,7 @@ contract TwoPlayerGame {
      *
      * bytes32 gameId - ID of the game to check.
      */
-    function isGameEnded(bytes32 gameId) public constant returns (bool) {
+    function isGameEnded(bytes32 gameId) public view returns (bool) {
         return gamesById[gameId].isEnded;
     }
 

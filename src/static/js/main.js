@@ -149,7 +149,7 @@ App = {
             App.getOpenGames();
             $('#account-select').trigger('click');
 
-            return App.bindGameEvents();
+            return App.bindGeneralPurposeEvents();
 
         });
 
@@ -157,7 +157,7 @@ App = {
     },
 
     /**
-     * Bind all event's, to their callbacks.
+     * Bind DOM related event's, to their callbacks.
      */
     bindEvents: function () {
 
@@ -176,9 +176,18 @@ App = {
         App.$waitForGameScreen = $('div[data-role="wait-for-game"]');
 
         /* As of jQuery v1.8, such $(document).on( "ready", handler ) support has been deprecated. */
+        App.$gameToJoinTable.on('click', App.joinSomeGame);
+        // App.$gameToJoinTable.click(function() {
+        //     let $item = $(this).closest("tr")   // Finds the closest row <tr>
+        //         .find(".nr")     // Gets a descendent with class="nr"
+        //         .text();         // Retrieves the text within <td>
+        //
+        //     console.log($item);
+        // });
+
+
         $('#account-select').on('click', App.getMyAccounts);
         $('#create-game').on('click', App.createNewGame);
-        $('#join').on('click', App.joinSomeGame);
         $('.closeGameButton').on('click', App.closeThisGame);
 
         /*
@@ -188,7 +197,10 @@ App = {
 
     },
 
-    bindGameEvents: function () {
+    /**
+     * Bind general purpose events, that are not related to any specific game.
+     */
+    bindGeneralPurposeEvents: function () {
 
         let meta = App.contracts.StickGame;
 
@@ -240,55 +252,113 @@ App = {
                 }
             );
 
-            meta.GameClosed()
+        meta.GameClosed()
+            .watch(
+                (err, logs) => {
+                    if (!err) {
+                        App.$gameToJoinTable.find(`tr[data-value="${logs.args['gameId']}"]`).remove();
+
+                        console.log('Removing from table ' + logs.toString());
+                    } else {
+                        console.log("Some error occurred, while processing GameClosed event.");
+                        console.log(err.toString());
+                    }
+                }
+            );
+    },
+
+    /**
+     * Bind game events, whose content is related to one game.
+     *
+     * isForeignGame - represents, if this game is the one we created, or if we join a game.
+     */
+    bindGameSpecificEvents: function (isForeignGame ) {
+        /*
+         * This events, are a little `different`, from previous ones.
+         *  We don't need all of them, so we attach filters on top of them.
+         */
+
+        let meta = App.contracts.StickGame;
+
+        /*
+         * If we joined a game, we don't need this logic.
+         *
+         * Actually this is a quick fix, need to repair it later.
+         */
+        if (!isForeignGame) {
+            let ourGameJoinFilter = meta.GameJoined(
+                {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
+            );
+
+            ourGameJoinFilter
                 .watch(
                     (err, logs) => {
                         if (!err) {
-                            App.$gameToJoinTable.find(`tr[data-value="${logs.args['gameId']}"]`).remove();
+                            /* First, extract the missing data, to start the game. */
 
-                            console.log('Removing from table ' + logs.toString());
+
+
+
+                            /* Finally, set the game running, and present it onto the screen. */
+                            let options = {};
+                            options.playerInfo = [];
+
+                            let player_1 = {};
+                            player_1.name = '';
+
+                            options.playerInfo.push(player_1);
+
+                            this.gameLogic.start(options);
+
                         } else {
-                            console.log("Some error occurred, while processing GameClosed event.");
+                            console.log("Some error occurred, while processing GameJoined event.");
                             console.log(err.toString());
                         }
                     }
                 );
+        }
 
-            /*
-             * This events, are a little `different`, from previous ones.
-             *  We don't need all of them, so we attach filters on top of them.
-             */
+        let ourGameEndedFilter = meta.GameEnded(
+            {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
+        );
 
-            // meta.GameJoined()
-            //     .watch(
-            //         (error, logs) => {
-            //             /* Finally, set the game running, and present it onto the screen. */
-            //             let options = {};
-            //             options.playerInfo = [];
-            //
-            //             let player_1 = {};
-            //             player_1.name = '';
-            //
-            //             options.playerInfo.push(player_1);
-            //
-            //             this.gameLogic.start(options);
-            //
-            //         }
-            //     );
-            //
-            // meta.GameEnded()
-            //     .watch(
-            //         (error, logs) => {
-            //
-            //         }
-            //     );
-            //
-            // meta.GameMove()
-            //     .watch(
-            //         (error, logs) => {
-            //
-            //         }
-            //     );
+        ourGameEndedFilter
+            .watch(
+                (err, logs) => {
+                    if (!err) {
+                        /*
+                         * If we are here, somebody either surrendered, or the game come to it's logical
+                         *  end. In any case just show the winning screen and clear up, and prepare for next game.
+                         */
+
+
+                    } else {
+                        console.log("Some error occurred, while processing GameEnded event.");
+                        console.log(err.toString());
+                    }
+                }
+            );
+
+        let ourGameMoveFilter = meta.GameMove(
+            {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
+        );
+
+        ourGameMoveFilter
+            .watch(
+                (err, logs) => {
+                    if (!err) {
+                        /*
+                         * If we are here, somebody either surrendered, or the game come to it's logical
+                         *  end. In any case just show the winning screen and exit.
+                         */
+
+
+                    } else {
+                        console.log("Some error occurred, while processing GameMove event.");
+                        console.log(err.toString());
+                    }
+                }
+            );
     },
 
     /**
@@ -449,6 +519,7 @@ App = {
 
                                 App.$startScreen.hide();
                                 App.$waitForGameScreen.show();
+                                App.bindGameSpecificEvents(false);
                                 filter.stopWatching();
                             }
                         } else {
@@ -469,8 +540,6 @@ App = {
      * It will remove game, from open games list(on the Ethereum ledger).
      *  However, we are going to return to main screen, only after we receive
      *  the closing event, that is connected to our game.
-     *
-     *
      */
     closeThisGame: function (event) {
 
@@ -498,11 +567,7 @@ App = {
 
                 filter.watch(
                     (err, log) => {
-                        console.log(log);
-                        console.log('Insede filter');
                         if (!err) {
-                            console.log('Insede filter1');
-                            console.log(App.ourAddress);
                             if (log.args['playerAddress'] === App.ourAddress) {
                                 console.log('Here comes our latest game closed event -> proceed to game screen');
 
@@ -521,32 +586,103 @@ App = {
     },
 
     /**
-     *
+     * This callback is triggered, when we decide to connect to some game.
+     *  The request is issued to the ledger, and
      */
     joinSomeGame: function (event) {
         event.preventDefault();
 
-        let meta;
-        App.contracts.StickGame.deployed().then(function (instance) {
-            meta = instance;
+        /*
+         * First, get the data from the event.
+         *  (WTF is that?)
+         */
+        let containingTrDOM = $(event.target).parent();
+        const currentGameId = containingTrDOM.attr('data-value');
+        if (typeof currentGameId === 'undefined') {
+            return;
+        }
 
-            let asyncJoinGame;
+        App.currentGameId = currentGameId;
 
-            if (App.isInjected) {
-                asyncJoinGame = App.promisify(meta.joinGame);
-            } else {
-                asyncJoinGame = meta.joinGame;
+        let children = containingTrDOM[0].children;
+        App.enemyName = children[0].innerText;
+        App.gameWidth = children[1].innerText;
+        App.gameHigth = children[2].innerText;
+        App.numberOfPlayers = children[3].innerText;
+
+        /* Get the nick-name. */
+        App.ourName = $('#nick-name').val();
+        if (App.ourName.length === 0) {
+            Alert.warning("Please type your nickname.");
+            return;
+        }
+
+        let meta = App.contracts.StickGame;
+
+        meta.joinGame(App.currentGameId, App.ourName, (err, currentTransactionHash) => {
+
+            if (err) {
+                Alert.warning("Big error", 'Some internal problem occurred while processing game joining call.');
+                console.log(err.message);
+                return;
             }
-            console.log(event.target.options[event.target.selectedIndex].text);
-            return asyncJoinGame(/* Game id we decided to join. */);
 
-        }).then(function (joinedGameParams) {
+            web3.eth.getTransaction(currentTransactionHash, (err, answer) => {
 
-        }).catch(function (err) {
+                if (err) {
+                    Alert.warning("Internal error", 'Some internal problem occurred while parsing transaction info.');
+                    console.log(err.message);
+                    return;
+                }
 
-            alert('Cannot join some game.');
-            console.log(err.message);
+                let filter = meta.GameJoined(
+                    {player2: App.ourAddress},
+                    {address: App.contractAddress, fromBlock: answer.blockNumber, toBlock: 'latest'}
+                );
 
+                filter.watch(
+                    (err, ) => {
+                        if (!err) {
+
+                            /*
+                             * If we are here, that means, we really had connected to the game.
+                             *
+                             * Since we in reality only work with two players, get all info about our game,
+                             *  bind game specific callbacks and proceed to playing screen.
+                             */
+
+                            meta.getGameInfo.call(App.currentGameId, (error, gameInfo) => {
+
+                                if (error) {
+                                    Alert.warning("", "Some problem occurred while acquiring game info.");
+                                    console.log(error);
+                                }
+
+                                App.weMoveFirst = gameInfo[6];
+                                App.oponentName = web3.toAscii(gameInfo[2]);
+                                console.log('there wve rywhere';)
+                                console.log(App.weMoveFirst);
+                                console.log(App.oponentName);
+                                App.bindGameSpecificEvents(true);
+
+                            });
+
+                            filter.stopWatching();
+                        } else {
+                            Alert.warning("Internal error", 'Error while filtering for GameJoined event.');
+                            console.log(err.message);
+                        }
+                    }
+                );
+            });
         });
+    },
+
+    /**
+     * This is preliminary player building function,
+     *  that assembles together all player info.
+     */
+    buildGameInfo: function (gameInfo) {
+
     }
 };
