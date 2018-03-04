@@ -55,6 +55,7 @@ contract TwoPlayerGame {
 
         /* If the game have ended, the game have a winner -> stores winner address. */
         address winner;
+        string winnerName;
     }
 
     /* All games, that ever happened. */
@@ -130,13 +131,13 @@ contract TwoPlayerGame {
      * bytes32 gameId - the id of the closing game.
      */
     function _closeGame(bytes32 gameId) internal {
-        /* Get the Game object from global mapping. */
+        /* Get the GameLogic object from global mapping. */
         Game storage game = gamesById[gameId];
 
-        /* Game was started, however second player haven't connected yet. */
+        /* GameLogic was started, however second player haven't connected yet. */
         require(game.player2 == 0);
 
-        /* Game can be closed only by involved player. */
+        /* GameLogic can be closed only by involved player. */
         require(msg.sender == game.player1);
 
         /* If game was open -> close it. */
@@ -152,7 +153,7 @@ contract TwoPlayerGame {
      * string player2Alias - NickName of the player that wants to join the game.
      */
     function _joinGame(bytes32 gameId, string player2Alias) internal {
-        /* Get the Game object from global mapping. */
+        /* Get the GameLogic object from global mapping. */
         Game storage game = gamesById[gameId];
 
         /* First, check that game does't already have a second player. */
@@ -177,7 +178,7 @@ contract TwoPlayerGame {
      * bytes32 gameId - Id of a game, in which sender want to surrender.
      */
     function _surrender(bytes32 gameId) internal {
-        /* Get the Game object from global mapping. */
+        /* Get the GameLogic object from global mapping. */
         Game storage game = gamesById[gameId];
 
         /* First, check, that there are two players in the game. */
@@ -195,9 +196,11 @@ contract TwoPlayerGame {
         if (game.player1 == msg.sender) {
             /* player1 surrendered -> player2 won. */
             game.winner = game.player2;
+            game.winnerName = game.player2Alias;
         } else if(game.player2 == msg.sender) {
             /* player2 surrendered -> player1 won. */
             game.winner = game.player1;
+            game.winnerName = game.player1Alias;
         } else {
             /* Sender is'n related to this game. */
             revert();
@@ -215,19 +218,22 @@ contract TwoPlayerGame {
      * int8 winChoice - //ToDo: this needs fixing.
      */
     function _finishGame(bytes32 gameId, int8 winChoice) internal {
-        /* Get the Game object from global mapping. */
+        /* Get the GameLogic object from global mapping. */
         Game storage game = gamesById[gameId];
 
         /* Set up, the winner. */
         if (winChoice == 1) {
             /* player1 won. */
             game.winner = game.player1;
+            game.winnerName = game.player1Alias;
         } else if (winChoice == 1) {
             /* player2 won. */
             game.winner = game.player2;
+            game.winnerName = game.player2Alias;
         } else if (winChoice == 0) {
             /* No winner. */
             game.winner = 0;
+            game.winnerName = '';
         } else {
             /* Strange state -> trow some error. */
             revert();

@@ -7,7 +7,7 @@
  * What it does, is provides thin wrapper for the renderer class, and manages state of
  *  the game. Also it holds configuration for the current game.
  */
-class Game {
+class GameLogic {
 
     /**
      * The default constructor for the GameLogic object.
@@ -80,6 +80,8 @@ class Game {
         /* Draw the underlying graphics. */
         this.renderer.init();
         this.renderer.draw();
+
+        this._curPlayer = options.firstPlayerIndex;
 
         /* Show current player. */
         this.notifyPlayer();
@@ -199,38 +201,55 @@ class Game {
      *
      * This function, is called exclusively, on the Ethereum ledger callback `GameEnd`.
      */
-    announceWinner() {
+    announceWinner(winnerName) {
 
-        if (this.announceWinnerIsPossible) {
-            console.log("This time, game came to it's logical conclusion");
-        } else {
-            console.log("Something strange happened with the game");
-        }
-
-        let i;
-        let highScoreTies = [];
-        let highScorePlayer = this.players[0];
-
-        // figure out the highest scoring player
-        for (i = 0; i < this.players.length; i++) {
-
-            if (this.players[i].score > highScorePlayer.score) {
-                highScorePlayer = this.players[i];
+        /*
+         * It's either somebody surrendered, or the game really ended.
+         *
+         * Since on frontend we also keep track of players game status,
+         *  we definitely can say, who really won the game
+         */
+        if (!this.announceWinnerIsPossible) {
+            console.log("Somebody is surrendering.");
+            console.log(winnerName);
+            if (winnerName === this.ourPlayer.name) {
+                GameLogic.displayWinnerOnSurrender({player: winnerName, weSurrendered: false});
+            } else {
+                GameLogic.displayWinnerOnSurrender({player: winnerName, weSurrendered: true});
             }
-        }
 
-        // figure out if there are any ties
-        for (i = 0; i < this.players.length; i++) {
-            if (this.players[i].score === highScorePlayer.score &&
-                this.players[i].index !== highScorePlayer.index) {
-                highScoreTies.push(this.players[i]);
-            }
-        }
-
-        if (highScoreTies.length > 0) {
-            this.displayWinner({player: highScoreTies, isATie: true});
         } else {
-            this.displayWinner({player: highScorePlayer, isATie: false});
+            console.log("This time, game came to it's logical conclusion.");
+
+            let i;
+            let highScoreTies = [];
+            let highScorePlayer = this.players[0];
+
+            // figure out the highest scoring player
+            for (i = 0; i < this.players.length; i++) {
+
+                if (this.players[i].score > highScorePlayer.score) {
+                    highScorePlayer = this.players[i];
+                }
+            }
+
+            // figure out if there are any ties
+            for (i = 0; i < this.players.length; i++) {
+                if (this.players[i].score === highScorePlayer.score &&
+                    this.players[i].index !== highScorePlayer.index) {
+                    highScoreTies.push(this.players[i]);
+                }
+            }
+
+            console.log('Below are winner names. Check that they are the same.');
+            console.log(winnerName);
+            console.log(highScoreTies);
+            console.log(highScorePlayer);
+            if (highScoreTies.length > 0) {
+                GameLogic.displayWinner({player: highScoreTies, isATie: true});
+            } else {
+                GameLogic.displayWinner({player: highScorePlayer, isATie: false});
+            }
         }
     }
 
@@ -263,7 +282,10 @@ class Game {
      * Notifies the current player that it's their turn.
      */
     notifyPlayer() {
-        this.displayCurrentPlayer(this.players[this.curPlayerId]);
+        console.log('We are displaying users');
+        console.log(this.curPlayerId);
+        console.log(this.players[this.curPlayerId]);
+        GameLogic.displayCurrentPlayer(this.players[this.curPlayerId]);
     }
 
     /**
@@ -276,7 +298,7 @@ class Game {
             this.players[i] = playerInfo[i];
             this.players[i].index = i;
             this.players[i].score = 0;
-            this.players[i].color = Game.getPlayerColor(this.options.numPlayers, i);
+            this.players[i].color = GameLogic.getPlayerColor(this.options.numPlayers, i);
 
         }
     }
@@ -374,6 +396,36 @@ class Game {
     }
 
     /**
+     * Same as displayWinner, callback, however this function is called, when other player surrendered.
+     *
+     * player - Player object, that won the game.
+     * weSurrendered - true, if the one who surrendered in the game is us.
+     */
+    static displayWinnerOnSurrender(player, weSurrendered) {
+        /*
+         * Hide the player naming label, surrender button, and game itself. */
+        document.getElementById('current-player-display').setAttribute('style', 'display: none;');
+        document.getElementById('surrender-game').setAttribute('style', 'display: none;');
+        document.getElementById('game-board').setAttribute('style', 'display: none;');
+
+        /* Then update the winner DOM and show the return to menu button. */
+        let winnerNameDOM = document.getElementById('winner-name');
+        let winnerTextDOM = document.getElementById('winner-text');
+
+        if (weSurrendered) {
+            winnerTextDOM.innerHTML = 'Why did you gave up? The win was so close.';
+        } else {
+            winnerTextDOM.innerHTML = 'Looks like other player had give up on this game.';
+        }
+        winnerNameDOM.textContent = player.name;
+        winnerNameDOM.setAttribute('style', 'color: ' + player.color + ';');
+
+
+        document.getElementById('winner-display').setAttribute('style', 'display: block;');
+        document.getElementById('back-to-menu').setAttribute('style', 'display: block;');
+    }
+
+    /**
      * Shows the winner of the game.
      *
      * player - Player object, that represents the winner.
@@ -381,18 +433,25 @@ class Game {
      */
     static displayWinner(player, isATie) {
 
-        /* Hide the player naming label, since no more steps. */
+        /* Hide the player naming label, surrender button, and game itself. */
         document.getElementById('current-player-display').setAttribute('style', 'display: none;');
+        document.getElementById('surrender-game').setAttribute('style', 'display: none;');
+        document.getElementById('game-board').setAttribute('style', 'display: none;');
 
         let winnerNameDOM = document.getElementById('winner-name');
+        let winnerTextDOM = document.getElementById('winner-text');
 
         if (isATie) {
-            winnerNameDOM.innerHTML = 'Looks like a tie. Play one more?';
+            winnerTextDOM.innerHTML = 'Looks like a tie. Play one more?';
+            winnerNameDOM.innerHTML = '';
         } else {
+            winnerTextDOM.innerHTML = 'And we have a winner.';
             winnerNameDOM.setAttribute('style', 'color: ' + player.color + ';');
             winnerNameDOM.textContent = player.name;
         }
+
         document.getElementById('winner-display').setAttribute('style', 'display: block;');
+        document.getElementById('back-to-menu').setAttribute('style', 'display: block;');
     }
 
     /**

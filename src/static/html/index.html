@@ -171,13 +171,22 @@
 
                 <!-- Is shown, when some user won. -->
                 <h4 id="winner-display" style="display: none;">
-                    <span id="winner-name"></span> wins!
+                    <span id="winner-text"></span>
+                    <span id="winner-name"></span> won!
                 </h4>
 
                 <div class="loader loader--style1" title="0"> </div>
 
-                <!-- Game graphics holder. -->
+                <!-- GameLogic graphics holder. -->
                 <svg id="game-board" height="600" width="600"></svg>
+
+                <div id="surrender-game" class="more-link">
+                    <div class="link">SURRENDER GAME</div>
+                </div>
+
+                <button id="back-to-menu" class="closeGameButton" type="button" style="display: none;">
+                    CLICK TO PLAY ONE MORE GAME
+                </button>
 
             </div>
 
@@ -199,7 +208,7 @@
                     </div>
                 </div>
 
-                <button class="closeGameButton" type="button">
+                <button id="close-game" class="closeGameButton" type="button">
                     CLICK TO CLOSE
                 </button>
 

@@ -10,7 +10,7 @@ class Renderer {
     /**
      * The default constructor for the Renderer-Board object.
      *
-     * game - A reference to the parent Game object.
+     * game - A reference to the parent GameLogic object.
      * svgId - HTML ID of the game board's SVG element.
      * width -  The number of squares in the horizontal direction.
      * height - The number of squares in the vertical direction.

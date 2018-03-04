@@ -88,7 +88,7 @@ contract StickGame is TwoPlayerGame {
      * bytes32 gameId - id of the game, that had ended.
      * address player - Address of the player, that won the game.
      */
-    event GameEnded(bytes32 indexed gameId, address indexed player);
+    event GameEnded(bytes32 indexed gameId, bytes32 player);
 
 
     /*
@@ -161,7 +161,7 @@ contract StickGame is TwoPlayerGame {
     }
 
     /*
-     * Close open game. Game mustn't have second player.
+     * Close open game. GameLogic mustn't have second player.
      *
      * bytes32 gameId - ID of the game to join.
      */
@@ -210,7 +210,7 @@ contract StickGame is TwoPlayerGame {
     function surrender(bytes32 gameId) notEnded(gameId) onlyPlayers(gameId) public {
         _surrender(gameId);
 
-        GameEnded(gameId, gamesById[gameId].winner);
+        GameEnded(gameId, stringToBytes32(gamesById[gameId].winnerName));
     }
 
     /*
@@ -238,7 +238,7 @@ contract StickGame is TwoPlayerGame {
 
             _finishGame(gameId, 1);
 
-            GameEnded(gameId, gamesById[gameId].winner);
+            GameEnded(gameId, stringToBytes32(gamesById[gameId].winnerName));
         }
     }
 

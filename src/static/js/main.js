@@ -34,7 +34,7 @@ App = {
     /* List of attached contracts. */
     contracts: {},
 
-    /* Game logic object. Doesn't have any  */
+    /* GameLogic logic object. Doesn't have any  */
     gameLogic: null,
 
     /**
@@ -52,7 +52,7 @@ App = {
 
         /* First, init the game logic object. */
 
-        this.gameLogic = new Game({
+        App.gameLogic = new GameLogic({
 
             /* Currently we don't support dynamic grid, and more than 2 players, but anyways. */
             width: 8,
@@ -165,10 +165,9 @@ App = {
         /* Represents input form. */
         App.$gameToJoinTable = $('#opponents-table');
 
-
         /* Start screen holder. */
         App.$startScreen = $('div[data-role="start"]');
-        /* Game screen holder. */
+        /* GameLogic screen holder. */
         App.$gameScreen = $('div[data-role="game"]');
         /* Wait screen holder. */
         App.$waitScreen = $('div[data-role="wait"]');
@@ -177,18 +176,12 @@ App = {
 
         /* As of jQuery v1.8, such $(document).on( "ready", handler ) support has been deprecated. */
         App.$gameToJoinTable.on('click', App.joinSomeGame);
-        // App.$gameToJoinTable.click(function() {
-        //     let $item = $(this).closest("tr")   // Finds the closest row <tr>
-        //         .find(".nr")     // Gets a descendent with class="nr"
-        //         .text();         // Retrieves the text within <td>
-        //
-        //     console.log($item);
-        // });
-
 
         $('#account-select').on('click', App.getMyAccounts);
         $('#create-game').on('click', App.createNewGame);
-        $('.closeGameButton').on('click', App.closeThisGame);
+        $('#close-game').on('click', App.closeThisGame);
+        $('#surrender-game').on('click', App.surrenderThisGame);
+        $('#back-to-menu').on('click', App.cleanUpAndReturn);
 
         /*
          * We update the `Open Games` table each 5 seconds.
@@ -296,19 +289,14 @@ App = {
                         if (!err) {
                             /* First, extract the missing data, to start the game. */
 
-
-
+                            App.enemyName = web3.toAscii(logs.args['player2Alias']);
 
                             /* Finally, set the game running, and present it onto the screen. */
-                            let options = {};
-                            options.playerInfo = [];
+                            App.gameLogic.start(App.buildGameInfo());
 
-                            let player_1 = {};
-                            player_1.name = '';
-
-                            options.playerInfo.push(player_1);
-
-                            this.gameLogic.start(options);
+                            App.$waitForGameScreen.hide();
+                            App.$gameScreen.show();
+                            ourGameJoinFilter.stopWatching();
 
                         } else {
                             console.log("Some error occurred, while processing GameJoined event.");
@@ -321,6 +309,9 @@ App = {
         let ourGameEndedFilter = meta.GameEnded(
             {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
         );
+        let ourGameMoveFilter = meta.GameMove(
+            {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
+        );
 
         ourGameEndedFilter
             .watch(
@@ -328,9 +319,13 @@ App = {
                     if (!err) {
                         /*
                          * If we are here, somebody either surrendered, or the game come to it's logical
-                         *  end. In any case just show the winning screen and clear up, and prepare for next game.
+                         *  end. In any case just process this fact.
                          */
 
+                        App.gameLogic.announceWinner(web3.toAscii(logs.args['winnerName']));
+                        ourGameEndedFilter.stopWatching();
+                        /* After receiving `GameEnd` event, we also stop watching for movements events. */
+                        ourGameMoveFilter.stopWatching();
 
                     } else {
                         console.log("Some error occurred, while processing GameEnded event.");
@@ -339,18 +334,16 @@ App = {
                 }
             );
 
-        let ourGameMoveFilter = meta.GameMove(
-            {gameId: App.currentGameId}, {address: App.contractAddress, fromBlock: 0, toBlock: 'latest'}
-        );
-
         ourGameMoveFilter
             .watch(
                 (err, logs) => {
                     if (!err) {
                         /*
-                         * If we are here, somebody either surrendered, or the game come to it's logical
-                         *  end. In any case just show the winning screen and exit.
+                         * Everything is simple. We only process the draw calls, that are given to us.
+                         *  Since all logic is on Smart-Contract -> parse parameters and
+                         *  make a draw call.
                          */
+
 
 
                     } else {
@@ -506,10 +499,10 @@ App = {
                                     .text(App.weMoveFirst? 'First movements is ours, Yay.': "We didn't got firs step.");
                                 App.$waitForGameScreen
                                     .find('#actual-game-size')
-                                    .text('Game size is: ' + App.gameHigth + ' x ' + App.gameWidth);
+                                    .text('GameLogic size is: ' + App.gameHigth + ' x ' + App.gameWidth);
                                 App.$waitForGameScreen
                                     .find('#actual-number-of-players')
-                                    .text('Game for ' + App.numberOfPlayers + 'people.');
+                                    .text('GameLogic for ' + App.numberOfPlayers + 'people.');
                                 App.$waitForGameScreen
                                     .find('#actual-game-id')
                                     .text('This game ID is: ' + App.currentGameId);
@@ -534,7 +527,7 @@ App = {
     },
 
     /**
-     * If we are on the game screen, and decided to close our game(i.e. if nobody is coming),
+     * If we are on the waiting for game screen, and decided to close our game(i.e. if nobody is coming),
      *  this function is triggered.
      *
      * It will remove game, from open games list(on the Ethereum ledger).
@@ -586,6 +579,28 @@ App = {
     },
 
     /**
+     * If we are on the game screen, and don't want to play anymore,
+     *  one may press, the surrender button, and this callback will be triggered.
+     *
+     * This will trigger GameEnd event. However logic, that will handle the drawing
+     *  lies in some other place(wow, such good code design, mmm).
+     */
+    surrenderThisGame: function (event) {
+
+        event.preventDefault();
+
+        let meta = App.contracts.StickGame;
+
+        meta.surrender(App.currentGameId, function (err, ) {
+
+            if (err) {
+                Alert.warning("Warning", "Some problem occurred while we were trying to give up on the game.");
+                console.log(err.message);
+            }
+        });
+    },
+
+    /**
      * This callback is triggered, when we decide to connect to some game.
      *  The request is issued to the ledger, and
      */
@@ -620,7 +635,6 @@ App = {
         let meta = App.contracts.StickGame;
 
         meta.joinGame(App.currentGameId, App.ourName, (err, currentTransactionHash) => {
-
             if (err) {
                 Alert.warning("Big error", 'Some internal problem occurred while processing game joining call.');
                 console.log(err.message);
@@ -628,7 +642,6 @@ App = {
             }
 
             web3.eth.getTransaction(currentTransactionHash, (err, answer) => {
-
                 if (err) {
                     Alert.warning("Internal error", 'Some internal problem occurred while parsing transaction info.');
                     console.log(err.message);
@@ -637,12 +650,13 @@ App = {
 
                 let filter = meta.GameJoined(
                     {player2: App.ourAddress},
-                    {address: App.contractAddress, fromBlock: answer.blockNumber, toBlock: 'latest'}
+                    {address: App.contractAddress, fromBlock: answer.blockNumber - 1, toBlock: 'latest'}
                 );
 
                 filter.watch(
                     (err, ) => {
                         if (!err) {
+                            console.log('In event.');
 
                             /*
                              * If we are here, that means, we really had connected to the game.
@@ -654,16 +668,20 @@ App = {
                             meta.getGameInfo.call(App.currentGameId, (error, gameInfo) => {
 
                                 if (error) {
-                                    Alert.warning("", "Some problem occurred while acquiring game info.");
+                                    Alert.warning("Warning", "Some problem occurred while acquiring game info.");
                                     console.log(error);
                                 }
 
-                                App.weMoveFirst = gameInfo[6];
-                                App.oponentName = web3.toAscii(gameInfo[2]);
-                                console.log('there wve rywhere';)
-                                console.log(App.weMoveFirst);
-                                console.log(App.oponentName);
+                                console.log(gameInfo);
+
+                                /* bool for movement. and nick-name in bytes format. */
+                                App.weMoveFirst = !gameInfo[5]; // Player1 moves first. Currently we are second player.
+                                App.enemyName = web3.toAscii(gameInfo[0]);
+
+                                App.gameLogic.start(App.buildGameInfo());
                                 App.bindGameSpecificEvents(true);
+                                App.$startScreen.hide();
+                                App.$gameScreen.show();
 
                             });
 
@@ -679,10 +697,26 @@ App = {
     },
 
     /**
+     * Called, when user decides to play one more game,
+     *  after he is done with the previous one.
+     */
+    cleanUpAndReturn: function (event) {
+        // App.$gameScreen.hide();
+        // App.$startScreen.show();
+    },
+
+    /**
      * This is preliminary player building function,
      *  that assembles together all player info.
      */
-    buildGameInfo: function (gameInfo) {
-
+    buildGameInfo: function () {
+        return {
+            playerInfo: [
+                {name: App.ourName,},
+                {name: App.enemyName,}
+            ],
+            gameId: App.currentGameId,
+            firstPlayerIndex: App.weMoveFirst? 0: 1,
+        };
     }
 };
