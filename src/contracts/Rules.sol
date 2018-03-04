@@ -50,13 +50,9 @@ library Rules {
 
     enum Direction {
         UP,         //  [0, 1]
-        UP_RIGHT,   //  [1, 1]
         RIGHT,      //  [1, 0]
-        DOWN_RIGHT, //  [1, -1]
         DOWN,       //  [0, -1]
-        DOWN_LEFT,  //  [-1, -1]
-        LEFT,       //  [-1, 0]
-        UP_LEFT     //  [-1. 1]
+        LEFT       //  [-1, 0]
     }
 
 
@@ -72,8 +68,12 @@ library Rules {
         return false;
     }
 
-    /* validates a move and executes it */
-    function move(State storage self, uint256 xIndex, uint256 yIndex, bool isFirstPlayer) internal {
+    /**
+     * Validates if a move is technically (not legally) possible,
+     * i.e. if piece is capable to move this way
+     */
+    function checkMove(State storage self, uint256 xIndex, uint256 yIndex) internal view {
+
 
         bool currentPlayerColor;
 
@@ -82,22 +82,6 @@ library Rules {
         } else {
             currentPlayerColor = Players(Player.GREEN);
         }
-
-        /*
-         * Validate that this move is possible, and doesn't violate any rules.
-         */
-        checkMove(self, xIndex, yIndex);
-
-        /* Preform the move itself. */
-        makeMove(self, xIndex, yIndex, currentPlayerColor);
-
-    }
-
-    /**
-     * Validates if a move is technically (not legally) possible,
-     * i.e. if piece is capable to move this way
-     */
-    function checkMove(State storage self, uint256 xIndex, uint256 yIndex) internal view {
 
         /* First, check that move is within the field. */
         require(
@@ -135,11 +119,18 @@ library Rules {
         return self.firstPlayer;
     }
 
-    function getCurrentGameState(State storage self) internal view returns (int8[64]) {
-        return self.state;
+    function getStateByIndex(State storage self, uint256 xIndex, uint256 yIndex) internal view returns (bool) {
     }
 
-    function getStateByIndex(State storage self, uint256 xIndex, uint256 yIndex) internal view returns (bool) {
-        return self.fast_fields[xIndex][yIndex].flag;
+
+    /*
+     * This function, says, who won in the game.
+     * Note, that the draw, is also possible.
+     *
+     * @param bytes32 gameId - The Id of a game, where to find winner.
+     *
+     * @returns int choice - `-1` if player1 is the winner, `1` if player2, and `0` in case of a draw.
+     */
+    function determineWinner(bytes32 gameId) internal view returns (int8 choice) {
     }
 }

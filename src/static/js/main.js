@@ -317,6 +317,7 @@ App = {
             .watch(
                 (err, logs) => {
                     if (!err) {
+
                         /*
                          * If we are here, somebody either surrendered, or the game come to it's logical
                          *  end. In any case just process this fact.
@@ -344,6 +345,15 @@ App = {
                          *  make a draw call.
                          */
 
+                        logs.args['player'];
+
+                        typeof field === "string" ?
+                            web3.toAscii(field)
+                            :typeof field === "boolean" ?
+                            field ?
+                                "Game creator moves first."
+                                : "Joining player will move first."
+                            :field.c[0]
 
 
                     } else {

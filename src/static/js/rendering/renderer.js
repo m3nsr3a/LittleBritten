@@ -91,7 +91,7 @@ class Renderer {
     disposeVertices() {
         for (let y = 0; y <= this.height; y++) {
             for (let x = 0; x <= this.width; x++) {
-                delete this.vertices[y][x].pop();
+                delete this.vertices[y][x];
             }
         }
         console.log(this.vertices);

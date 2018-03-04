@@ -211,13 +211,38 @@ contract TwoPlayerGame {
     }
 
     /*
+     * This function, just preforms the player term rotation.
+     *
+     * bytes32 gameId - ID of the game, where move is preformed.
+     * bool scored - if true, the scored player wil get one more move.
+     */
+    function _makeMove(bytes32 gameId, bool scored) internal {
+
+        if (!scored) {
+            /* Get the GameLogic object from global mapping. */
+            Game storage game = gamesById[gameId];
+
+            /* Set up nextPlayer, based on the rules. */
+            if (msg.sender == game.player1) {
+                game.nextPlayer = game.player2;
+            } else {
+                game.nextPlayer = game.player1;
+            }
+        }
+    }
+
+    /*
      * This function is called, when we already had determined the logical winner,
      *  i.e. that the game came to it's logical end(no more moves).
      *
      * bytes32 gameId - Id of a game, in where last move have been made.
-     * int8 winChoice - //ToDo: this needs fixing.
+     * int8 winChoice - Represents winner
+     *                  1 if player1 won,
+     *                  2 if player2 won,
+     *                  0 if is a tie.
      */
     function _finishGame(bytes32 gameId, int8 winChoice) internal {
+
         /* Get the GameLogic object from global mapping. */
         Game storage game = gamesById[gameId];
 
@@ -231,7 +256,7 @@ contract TwoPlayerGame {
             game.winner = game.player2;
             game.winnerName = game.player2Alias;
         } else if (winChoice == 0) {
-            /* No winner. */
+            /* No winner -> a tie. */
             game.winner = 0;
             game.winnerName = '';
         } else {
@@ -243,24 +268,6 @@ contract TwoPlayerGame {
         game.isEnded = true;
     }
 
-    /*
-     * Preform move in the game and notify everyone.
-     * After any move, the game may be won,
-     *
-     * bytes32 gameId - ID of the game, where move is preformed.
-     * uint256 xIndex - the x position on the grid.
-     * uint256 yIndex - the y position on the grid.
-     */
-    function makeMove(bytes32 gameId) public {
-
-        /* Set up nextPlayer, based on the rules. */
-        if (msg.sender == gamesById[gameId].player1) {
-            gamesById[gameId].nextPlayer = gamesById[gameId].player2;
-        } else {
-            gamesById[gameId].nextPlayer = gamesById[gameId].player1;
-        }
-    }
-
 
     /*
      * Inner helper functions.
@@ -268,7 +275,7 @@ contract TwoPlayerGame {
 
 
     /*
-     * Inner function, that removes game from openGamesById LL.
+     * Internal function, that removes game from openGamesById LL.
      *
      * bytes32 gameId - ID of the game to remove from LL.
      */
@@ -296,6 +303,7 @@ contract TwoPlayerGame {
      */
     function stringToBytes32(string memory source) internal pure returns (bytes32 result) {
         bytes memory tempEmptyStringTest = bytes(source);
+
         if (tempEmptyStringTest.length == 0) {
             return 0x0;
         }
@@ -346,14 +354,4 @@ contract TwoPlayerGame {
 
         return (gameIds, gamePlayerNames, gameSizesX, gameSizesY, gameNumberOfPlayers, gameWeMoveFirst);
     }
-
-    /*
-     * Helper function, that checks if the game have ended.
-     *
-     * bytes32 gameId - ID of the game to check.
-     */
-    function isGameEnded(bytes32 gameId) public view returns (bool) {
-        return gamesById[gameId].isEnded;
-    }
-
 }

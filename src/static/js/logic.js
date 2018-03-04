@@ -103,24 +103,9 @@ class GameLogic {
          */
         if (!this.announceWinnerIsPossible) {
             console.log("Somebody is surrendering.");
-            console.log(winnerName);
-            console.log(this.ourPlayer.name);
-            console.log(typeof this.ourPlayer.name);
-            console.log(typeof winnerName);
-            if (winnerName.toString() > this.ourPlayer.name.toString()) {
-                console.log(winnerName.length);
-                console.log(this.ourPlayer.name.length);
-            } else {
-                console.log("other is greater? " + (winnerName.toString() < this.ourPlayer.name.toString()).toString())
-            }
             if (winnerName.toString() === this.ourPlayer.name.toString()) {
-                console.log('here');
-                console.log(this.ourPlayer);
                 GameLogic.displayWinnerOnSurrender(this.ourPlayer, false);
             } else {
-                console.log('there');
-                console.log(this.otherPlayer);
-                console.log('ing ame');
                 GameLogic.displayWinnerOnSurrender(this.otherPlayer, true);
             }
 
@@ -170,8 +155,9 @@ class GameLogic {
         this._curPlayer = 0;
         this._occupiedSquares = 0;
 
-        /* Finally, clear all the graphic elements. */
+        /* Finally, clear all the graphic elements, and return them to inital state. */
         this.renderer.dispose();
+        GameLogic.restoreOriginalGameDOM();
     }
 
     /**
@@ -184,17 +170,17 @@ class GameLogic {
     completeTurn(lineObject) {
 
         if (lineObject.owner) {
-            this.showAlert('Warning!', "You can't claim already claimed line!");
+            GameLogic.showAlert('Warning!', "You can't claim already claimed line!");
             return;
         }
 
         if (this.curPlayerId !== this.ourIndex) {
-            this.showAlert('Warning!', "It's not your turn, to make move!");
+            GameLogic.showAlert('Warning!', "It's not your turn, to make move!");
             return;
         }
 
         if (this.isWaitingForConformation) {
-            this.showAlert('Warning!', "Can't make new move, because waiting for conformation!");
+            GameLogic.showAlert('Warning!', "Can't make new move, because waiting for conformation!");
             return;
         }
 
@@ -319,7 +305,6 @@ class GameLogic {
     buildPlayers(playerInfo) {
 
         for (let i = 0; i < this.options.numPlayers; i++) {
-            console.log(playerInfo[i]);
 
             this.players[i] = playerInfo[i];
             this.players[i].index = i;
@@ -428,7 +413,6 @@ class GameLogic {
      * weSurrendered - true, if the one who surrendered in the game is us.
      */
     static displayWinnerOnSurrender(player, weSurrendered) {
-        console.log(player);
         /*
          * Hide the player naming label, surrender button, and game itself. */
         document.getElementById('current-player-display').setAttribute('style', 'display: none;');
@@ -479,6 +463,16 @@ class GameLogic {
 
         document.getElementById('winner-display').setAttribute('style', 'display: block;');
         document.getElementById('back-to-menu').setAttribute('style', 'display: block;');
+    }
+
+    static restoreOriginalGameDOM() {
+        document.getElementById('current-player-display').setAttribute('style', 'display: block;');
+        document.getElementById('surrender-game').setAttribute('style', 'display: block;');
+        document.getElementById('game-board').setAttribute('style', 'display: block;');
+
+        document.getElementById('winner-display').setAttribute('style', 'display: none;');
+        document.getElementById('back-to-menu').setAttribute('style', 'display: none;');
+
     }
 
     /**
