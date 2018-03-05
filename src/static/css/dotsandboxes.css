@@ -1,0 +1,25 @@
+/* Simple reset */
+body {
+	margin: 0px;
+	padding: 0px;
+}
+
+#container {
+	margin: 25px;
+}
+
+#gameboard {
+	margin-top: 20px;
+	margin-left: 20px;
+}
+
+.segment {
+	stroke-width: 15;
+	stroke: #cccccc;
+}
+
+.segment:hover {
+	stroke-width: 15;
+	stroke: #ff9999;
+}
+

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>Little Britten</title>
+
+        <!-- Bootstrap -->
+        <link href="vendor/css/bootstrap.min.css" rel="stylesheet">
+
+        <link href="static/css/dotsandboxes.css" rel="stylesheet">
+
+    </head>
+
+    <body>
+
+        <h1>Hello, world!</h1>
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="vendor/js/jquery_1.12.4.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="vendor/js/bootstrap.min.js"></script>
+        <!-- Include the -->
+        <script src="vendor/js/web3.min.js"></script>
+        <!-- Special plugin for -->
+        <script src="vendor/js/truffle-contract.js"></script>
+        <!-- Our code itself. -->
+        <script src="static/js/app.js"></script>
+
+        <!-- Our code itself. -->
+        <script src="static/js/primitives/base.js"></script>
+        <script src="static/js/primitives/line.js"></script>
+        <script src="static/js/primitives/square.js"></script>
+        <script src="static/js/primitives/vertex.js"></script>
+
+        <script src="static/js/renderer.js"></script>
+        <script src="static/js/logic.js"></script>
+
+        <div id="container">
+
+            <h2>My awesome game</h2>
+            <h4 id="current-player-display" style="display: none;">
+                Current player:
+                <span id="player-name"></span>
+            </h4>
+
+            <h4 id="winner-display" style="display: none;">
+                <span id="winner-name"></span> wins!
+            </h4>
+
+            <svg id="gameboard" height="600" width="600"></svg>
+
+        </div>
+
+        <script>
+
+            const game = new Game({
+
+                width: 4,
+                height: 4,
+                numPlayers: 2,
+                boardId: 'gameboard',
+
+                getPlayerData: function (playerNum) {
+
+                    let player = {};
+
+                    switch (playerNum) {
+
+                        case 1:
+                            player.name = 'Red';
+                            break;
+
+                        case 2:
+                            player.name = 'Blue';
+                            break;
+
+                        default:
+                            player.name = 'John Doe';
+                            break;
+                    }
+
+                    return player;
+                },
+
+                // Callback that displays the current player.
+                displayCurrentPlayer: function (player) {
+
+                    let playerName = document.getElementById('player-name');
+
+                    playerName.setAttribute('style', 'color: ' + player.color + ';');
+                    playerName.textContent = player.name;
+
+                    document.getElementById('current-player-display').setAttribute('style', 'display: block;');
+                },
+
+                /**********************************************************/
+
+                // Callback that announces the winner.
+                displayWinner: function (player) {
+
+                    // hide current player label
+                    document.getElementById('current-player-display').setAttribute('style', 'display: none;');
+
+                    // set and display winner
+                    let winnerName = document.getElementById('winner-name');
+                    winnerName.setAttribute('style', 'color: ' + player.color + ';');
+                    winnerName.textContent = player.name;
+                    document.getElementById('winner-display').setAttribute('style', 'display: block;');
+                },
+
+                /**********************************************************/
+
+                // Callback that announces a tie. The Game object supports
+                // an arbitrary number of players, but this callback is
+                // written specifically for two players.
+                displayTie: function (players) {
+
+                    // hide current player label
+                    document.getElementById('current-player-display').setAttribute('style', 'display: none;');
+
+                    // set and display tie message
+                    document.getElementById('winner-display').innerHTML = 'Ah, shucks... Looks like it was a tie!';
+                    document.getElementById('winner-display').setAttribute('style', 'display: block;');
+                }
+            });
+
+            game.start();
+
+        </script>
+
+        Chess.joinGame($scope.gameId, $scope.username,
+        {
+        from: accounts.selectedAccount,
+        value: web3.toWei($scope.etherbet.replace(',', '.'), 'ether')
+        });
+
+    </body>
+
+</html>

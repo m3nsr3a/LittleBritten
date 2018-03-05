@@ -1,0 +1,17 @@
+version: '3'
+services:
+
+  ledger:
+    image: trufflesuite/ganache-cli:latest
+    hostname: ledger
+    ports:
+      - "8545:8545"
+    command: ganache-cli --port=8545 --defaultBalanceEther=10 --blockTime=1 --account='0x84c97981fca94204ddab8b1e078c07462c0cead4f26e6702d7526a0a55dd27be,500000000000000000000' --unlock='0x3a48b4dF879B93169B0a12419C9DC08AA2e8C840'
+
+  cite:
+    build:
+      context: ./src/
+      dockerfile: SubDockerfile
+    hostname: cite
+    depends_on:
+      - ledger
